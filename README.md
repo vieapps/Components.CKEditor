@@ -4,17 +4,7 @@ This repository presents a CKEditor5 with integration of custom link/media selec
 
 ## Quick start
 
-1. Open the `sample/index.html` page in the browser.
-
-If you picked the real-time collaboration plugins:
-
-2. Fill the dialog with correct token, websocket and upload URL endpoints. If you do not have these yet or do not know their meaning, [contact us](https://ckeditor.com/contact/).
-
-3. Copy the URL and share it or paste in another tab to enjoy real-time collaborative editing.
-
-If you picked the non-real-time collaboration plugins:
-
-2. Fill the prompt with the license key. If you do not have the license key yet [contact us](https://ckeditor.com/contact/).
+Open the `sample/index.html` page in the browser.
 
 ## Configuring build
 
@@ -24,7 +14,7 @@ Changes like changing toolbar items, changing order of icons or customizing plug
 
 However if you want to remove or add a plugin to the build you need to follow the next step of this guide.
 
-Note that it is also possible to go back to the [Online builder tool](https://ckeditor.com/ckeditor-5/online-builder) and pick other set of plugins. But we encourage you to try the harder way and to learn the principles of Node.js and CKEditor 5 ecosystems that will allow you to do more cool things in the future!
+Note that it is also possible to go to the [Online builder tool](https://ckeditor.com/ckeditor-5/online-builder) and pick other set of plugins. But we encourage you to try the harder way and to learn the principles of Node.js and CKEditor 5 ecosystems that will allow you to do more cool things in the future!
 
 ### Installation
 
