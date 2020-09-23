@@ -121,17 +121,17 @@ Editor.defaultConfig = {
 			'outdent',
 			'blockQuote',
 			'insertTable',
-			'horizontalLine',
-			'pageBreak',
 			'|',
 			'link',
 			'imageUpload',
 			'mediaEmbed',
 			'mediaSelector',
 			'|',
-			'highlight',
-			'selectAll',
 			'removeFormat',
+			'selectAll',
+			'highlight',
+			'horizontalLine',
+			'pageBreak',
 			'code',
 			'codeBlock',
 			'undo',
@@ -139,15 +139,46 @@ Editor.defaultConfig = {
 		]
 	},
 	image: {
+		upload: {
+			panel: {
+					items: ['insertImageViaUrl']
+			}
+		},
 		styles: [
 			'full',
+			'side',
 			'alignLeft',
 			'alignRight'
+		],
+		resizeOptions: [
+			{
+					name: 'imageResize:original',
+					label: 'Original',
+					value: null
+			},
+			{
+					name: 'imageResize:75',
+					label: '75%',
+					value: '75'
+			},
+			{
+					name: 'imageResize:50',
+					label: '50%',
+					value: '50'
+			},
+			{
+					name: 'imageResize:25',
+					label: '25%',
+					value: '25'
+			}
 		],
 		toolbar: [
 			'imageStyle:alignLeft',
 			'imageStyle:full',
 			'imageStyle:alignRight',
+			'imageStyle:side',
+			'|',
+			'imageResize',
 			'|',
 			'imageTextAlternative'
 		]
