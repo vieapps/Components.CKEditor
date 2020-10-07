@@ -5,6 +5,7 @@
 import DecoupledDocumentEditor from '@ckeditor/ckeditor5-editor-decoupled/src/decouplededitor';
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
 import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
+import Autosave from '@ckeditor/ckeditor5-autosave/src/autosave';
 import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
 import Code from '@ckeditor/ckeditor5-basic-styles/src/code';
@@ -47,16 +48,17 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 
-import LinkSelector from './link';
-import MediaSelector from './media';
-import Bookmark from './bookmark';
+import LinkSelector from './link.selectors/link';
+import MediaSelector from './link.selectors/media';
+import Bookmark from './bookmark/bookmark';
 
 export default class Editor extends DecoupledDocumentEditor {}
 
-// Plugins to include in the build.
+// plugins (be included in the build)
 Editor.builtinPlugins = [
 	Alignment,
 	Autoformat,
+	Autosave,
 	BlockQuote,
 	Bold,
 	Code,
@@ -103,7 +105,7 @@ Editor.builtinPlugins = [
 	Bookmark
 ];
 
-// Editor configuration.
+// default configuration
 Editor.defaultConfig = {
 	toolbar: {
 		items: [
@@ -148,7 +150,7 @@ Editor.defaultConfig = {
 	image: {
 		upload: {
 			panel: {
-					items: ['insertImageViaUrl']
+				items: ['insertImageViaUrl']
 			}
 		},
 		styles: [
@@ -159,24 +161,24 @@ Editor.defaultConfig = {
 		],
 		resizeOptions: [
 			{
-					name: 'imageResize:original',
-					label: 'Original',
-					value: null
+				name: 'imageResize:original',
+				label: 'Original',
+				value: null
 			},
 			{
-					name: 'imageResize:75',
-					label: '75%',
-					value: '75'
+				name: 'imageResize:75',
+				label: '75%',
+				value: '75'
 			},
 			{
-					name: 'imageResize:50',
-					label: '50%',
-					value: '50'
+				name: 'imageResize:50',
+				label: '50%',
+				value: '50'
 			},
 			{
-					name: 'imageResize:25',
-					label: '25%',
-					value: '25'
+				name: 'imageResize:25',
+				label: '25%',
+				value: '25'
 			}
 		],
 		toolbar: [
@@ -185,11 +187,11 @@ Editor.defaultConfig = {
 			'imageStyle:alignRight',
 			'imageStyle:side',
 			'|',
-			'imageResize',
-			'|',
 			'imageTextAlternative',
 			'|',
-			'linkImage'
+			'linkImage',
+			'|',
+			'imageResize'
 		]
 	},
 	table: {
@@ -210,8 +212,26 @@ Editor.defaultConfig = {
 				attributes: {
 					target: '_blank'
 				}
+			},
+			toggleDownloadable: {
+				mode: 'manual',
+				label: 'Downloadable',
+				attributes: {
+					download: 'file'
+				}
+			},
+			relNoOpenerNoReferrer: {
+				mode: 'manual',
+				label: 'noopener/noreferrer',
+				defaultValue: false,
+				attributes: {
+					rel: 'noopener noreferrer'
+				}
 			}
 		}
 	},
-	language: 'en'
+	language: {
+		ui: 'en',
+		content: 'en'
+	}
 };

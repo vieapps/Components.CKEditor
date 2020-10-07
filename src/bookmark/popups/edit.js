@@ -1,6 +1,6 @@
 import View from '@ckeditor/ckeditor5-ui/src/view';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import InputTextView from '@ckeditor/ckeditor5-ui/src/inputtext/inputtextview';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
 import submitHandler from '@ckeditor/ckeditor5-ui/src/bindings/submithandler';
 import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
@@ -11,12 +11,13 @@ import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
 import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
 
 export default class EditPopup extends View {
+
 	constructor(locale) {
 		super(locale);
 
 		this.keystrokes = new KeystrokeHandler();
-
 		this.focusTracker = new FocusTracker();
+
 		this._focusables = new ViewCollection();
 		this._focusCycler = new FocusCycler({
 			focusables: this._focusables,
@@ -28,43 +29,44 @@ export default class EditPopup extends View {
 			}
 		});
 
-		this.tbName = new InputTextView(locale);
-		this.tbName.placeholder = 'Bookmark Name';
-		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon, 'ck-bookmark-edit-btnSave');
+		this.nameInput = new InputTextView(locale);
+		this.nameInput.placeholder = 'bookmark name';
+		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon);
 		this.saveButtonView.type = 'submit';
-		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'ck-bookmark-edit-btnCancel', 'cancel');
-
-		this.tbName.extendTemplate({
-			attributes: {
-				class: ['ck-bookmark-edit-tbName']
-			}
-		});
+		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'cancel');
 
 		this.setTemplate({
 			tag: 'form',
-
 			attributes: {
 				class: ['ck-bookmark-edit'],
 				tabindex: '-1'
 			},
-
 			children: [
-				this.tbName,
-				this.saveButtonView,
-				this.cancelButtonView
+				{
+					tag: 'div',
+					children: [
+						this.nameInput
+					]
+				},
+				{
+					tag: 'div',
+					children: [
+						this.saveButtonView,
+						this.cancelButtonView
+					]
+				}
 			]
 		});
 	}
 
 	render() {
 		super.render();
-
 		submitHandler({
 			view: this
 		});
 
 		const childViews = [
-			this.tbName,
+			this.nameInput,
 			this.saveButtonView,
 			this.cancelButtonView
 		];
@@ -73,7 +75,6 @@ export default class EditPopup extends View {
 			this._focusables.add(v);
 			this.focusTracker.add(v.element);
 		});
-
 		this.keystrokes.listenTo(this.element);
 	}
 
@@ -81,25 +82,17 @@ export default class EditPopup extends View {
 		this._focusCycler.focusFirst();
 	}
 
-	_createButton(label, icon, className, eventName) {
+	_createButton(label, icon, event) {
 		const button = new ButtonView(this.locale);
-
 		button.set({
 			label,
 			icon,
 			tooltip: true
 		});
-
-		button.extendTemplate({
-			attributes: {
-				class: className
-			}
-		});
-
-		if (eventName) {
-			button.delegate('execute').to(this, eventName);
+		if (event) {
+			button.delegate('execute').to(this, event);
 		}
-
 		return button;
 	}
+
 }

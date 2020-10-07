@@ -1,24 +1,25 @@
 ﻿import Command from '@ckeditor/ckeditor5-core/src/command';
 
 export default class BookmarkCommand extends Command {
+	
 	constructor(editor) {
 		super(editor);
 		this.set("isBookmark", false);
 	}
 
 	execute(bookmarkName) {
-		const editor = this.editor;
-		const modelSelection = this.editor.model.document.selection;
+		const model = this.editor.model;
+		const selection = model.document.selection;
 
-		editor.model.change(modelWriter => {
-			if (modelSelection.isCollapsed) {
+		model.change(modelWriter => {
+			if (selection.isCollapsed) {
 				bookmarkName = bookmarkName || '';
 				const bookmark = modelWriter.createElement('bookmark', { name: bookmarkName });
-				editor.model.insertContent(bookmark);
+				model.insertContent(bookmark);
 				modelWriter.setSelection(bookmark, 'on');
 			}
 			else {
-				const element = modelSelection.getSelectedElement();
+				const element = selection.getSelectedElement();
 				if (element && element.is('element')) {
 					if (element.hasAttribute('name')) {
 						modelWriter.setAttribute('name', bookmarkName, element);
@@ -32,19 +33,20 @@ export default class BookmarkCommand extends Command {
 		this.isBookmark = false;
 
 		const model = this.editor.model;
-		const modelDocument = model.document;
-		const selectedElement = modelDocument.selection.getSelectedElement();
+		const selection = model.document.selection;
+		const element = selection.getSelectedElement();
 
-		if (selectedElement) {
-			this.value = selectedElement.getAttribute('name');
-			this.isBookmark = selectedElement.hasAttribute('name');
+		if (element) {
+			this.value = element.getAttribute('name');
+			this.isBookmark = element.hasAttribute('name');
 		}
 		else {
 			this.value = null;
 			this.isBookmark = false;
 		}
 
-		const isAllowed = model.schema.checkChild(modelDocument.selection.focus.parent, 'bookmark');
+		const isAllowed = model.schema.checkChild(selection.focus.parent, 'bookmark');
 		this.isEnabled = isAllowed;
 	}
+	
 }
