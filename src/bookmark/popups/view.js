@@ -13,8 +13,8 @@ export default class ViewPopup extends View {
 		this.keystrokes = new KeystrokeHandler();
 
 		this.nameLabel = new LabelView(locale);
-		this.editButtonView = this._createButton(locale.t('Edit'), pencilIcon, 'edit');
-		this.deleteButtonView = this._createButton(locale.t('Delete'), unlinkIcon, 'delete');
+		this.editButtonView = this._createButton(locale.t('Edit link').split(' ')[0], pencilIcon, 'edit');
+		this.deleteButtonView = this._createButton(locale.t('Unlink').split(' ')[0], unlinkIcon, 'delete');
 
 		this.setTemplate({
 			tag: 'div',

@@ -42,19 +42,9 @@ export default class EditPopup extends View {
 				tabindex: '-1'
 			},
 			children: [
-				{
-					tag: 'div',
-					children: [
-						this.nameInput
-					]
-				},
-				{
-					tag: 'div',
-					children: [
-						this.saveButtonView,
-						this.cancelButtonView
-					]
-				}
+				this.nameInput,
+				this.saveButtonView,
+				this.cancelButtonView
 			]
 		});
 	}
