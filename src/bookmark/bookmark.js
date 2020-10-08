@@ -215,6 +215,15 @@ class BookmarkUI extends Plugin {
 		return undefined;
 	}
 
+	_getBalloonPositionData() {
+		const view = this.editor.editing.view;
+		const element = this._getSelectedBookmarkElement();
+		const target = element
+			? view.domConverter.mapViewToDom(element)
+			: view.domConverter.viewRangeToDom(view.document.selection.getFirstRange());
+		return { target };
+	}
+
 	_enableUserBalloonInteractions() {
 		const editor = this.editor;
 
@@ -238,15 +247,6 @@ class BookmarkUI extends Plugin {
 			contextElements: [this._balloon.view.element],
 			callback: () => this._hideUI()
 		});
-	}
-
-	_getBalloonPositionData() {
-		const view = this.editor.editing.view;
-		const element = this._getSelectedBookmarkElement();
-		const target = element
-			? view.domConverter.mapViewToDom(element)
-			: view.domConverter.viewRangeToDom(view.document.selection.getFirstRange());
-		return { target };
 	}
 
 	_showUI() {
