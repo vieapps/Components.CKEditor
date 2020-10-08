@@ -4,29 +4,18 @@ import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import contentIcon from '../assets/icons/content.svg';
 import fileIcon from '../assets/icons/file.svg';
 
-/**
- * @extends module:core/plugin~Plugin
- */
+/** Allow to select a link from existing content or uploaded file */
 export default class LinkSelector extends Plugin {
 
-	/**
-	 * @inheritDoc
-	 */
 	constructor(editor) {
 		super(editor);
 		editor.config.define('link.selector', ['content', 'file']);
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	static get pluginName() {
 		return 'LinkSelector';
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	init() {
 		// get the configuration and create buttons
 		const config = this.editor.config.get('link.selector');

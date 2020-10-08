@@ -2,20 +2,13 @@ import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import mediaIcon from '@ckeditor/ckeditor5-media-embed/theme/icons/media-placeholder.svg';
 
-/**
- * @extends module:core/plugin~Plugin
- */
+/** Allow to select a uploaded media file */
 export default class MediaSelector extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
+
 	static get pluginName() {
 		return 'MediaSelector';
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	init() {
 		// get editor
 		const editor = this.editor;

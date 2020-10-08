@@ -17,10 +17,9 @@ import EditPopup from './popups/edit';
 import bookmarkCss from '../assets/bookmark.css';
 import bookmarkIcon from '../assets/icons/bookmark.svg';
 
+/** Allow to update a bookmark */
 export default class Bookmark extends Plugin {
-	/**
-	 * @inheritDoc
-	 */
+
 	constructor(editor) {
 		super(editor);
 		editor.config.define('bookmark');
