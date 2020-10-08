@@ -52,6 +52,8 @@ import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 import LinkSelector from './selectors/link';
 import MediaSelector from './selectors/media';
 import Bookmark from './bookmark/bookmark';
+import DivTagAttributes from './tag.attributes/div';
+import SectionTagAttributes from './tag.attributes/section';
 
 export default class Editor extends DecoupledDocumentEditor {}
 
@@ -104,7 +106,9 @@ Editor.builtinPlugins = [
 	Underline,
 	LinkSelector,
 	MediaSelector,
-	Bookmark
+	Bookmark,
+	DivTagAttributes,
+	SectionTagAttributes
 ];
 
 // default configuration
@@ -150,11 +154,6 @@ Editor.defaultConfig = {
 		]
 	},
 	image: {
-		upload: {
-			panel: {
-				items: ['insertImageViaUrl']
-			}
-		},
 		styles: [
 			'full',
 			'side',
