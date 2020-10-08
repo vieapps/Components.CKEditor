@@ -37,8 +37,9 @@ export default class ViewPopup extends View {
 	_createButton(label, icon, event) {
 		const button = new ButtonView(this.locale);
 		button.set({
-			label,
-			icon,
+			label: label,
+			icon: icon,
+			withText: false,
 			tooltip: true
 		});
 		button.delegate('execute').to(this, event);
