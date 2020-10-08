@@ -132,7 +132,7 @@ class BookmarkUI extends Plugin {
 		this._editPopup = this._createEditPopup();
 
 		editor.ui.componentFactory.add('bookmark', locale => {
-			const bookmarkCommand = editor.commands.get('bookmark');
+			const command = editor.commands.get('bookmark');
 			const button = new ButtonView(locale);
 			button.set({
 				label: editor.t('Bookmark'),
@@ -140,8 +140,8 @@ class BookmarkUI extends Plugin {
 				tooltip: true,
 				icon: bookmarkIcon
 			});
-			button.bind('isEnabled').to(bookmarkCommand, 'isEnabled');
-			button.bind('isOn').to(bookmarkCommand, 'isBookmark');
+			button.bind('isEnabled').to(command, 'isEnabled');
+			button.bind('isOn').to(command, 'isBookmark');
 
 			this.listenTo(button, 'execute', () => {
 				this.editor.execute('bookmark');

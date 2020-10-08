@@ -1,0 +1,12 @@
+.ck-toolbar .ck-toolbar__items button.ck-custom-tags-div {
+  color: #008a00;
+}
+.ck-toolbar .ck-toolbar__items button.ck-custom-tags-section {
+  color: #db3700;
+}
+.ck-content div {
+  border: dashed .5px #008a00;
+}
+.ck-content section {
+  border: dashed .5px #db3700;
+}

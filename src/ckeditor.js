@@ -52,8 +52,7 @@ import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 import LinkSelector from './selectors/link';
 import MediaSelector from './selectors/media';
 import Bookmark from './bookmark/bookmark';
-import DivTagAttributes from './tag.attributes/div';
-import SectionTagAttributes from './tag.attributes/section';
+import CustomTags from './tags/custom.tags';
 
 export default class Editor extends DecoupledDocumentEditor {}
 
@@ -107,8 +106,7 @@ Editor.builtinPlugins = [
 	LinkSelector,
 	MediaSelector,
 	Bookmark,
-	DivTagAttributes,
-	SectionTagAttributes
+	CustomTags
 ];
 
 // default configuration
@@ -144,6 +142,8 @@ Editor.defaultConfig = {
 			'removeFormat',
 			'selectAll',
 			'bookmark',
+			'custom-tags-div',
+			'custom-tags-section',
 			'highlight',
 			'horizontalLine',
 			'pageBreak',
@@ -234,5 +234,21 @@ Editor.defaultConfig = {
 	language: {
 		ui: 'en',
 		content: 'en'
-	}
+	},
+	customTags: [
+		{
+			tag: 'div',
+			placeholder: 'DIV text goes here',
+			attributes: {
+				'class': 'special block'
+			}
+		},
+		{
+			tag: 'section',
+			placeholder: 'SECTION text goes here',
+			attributes: {
+				'class': 'special block'
+			}
+		}
+	]
 };
