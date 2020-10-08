@@ -11,18 +11,18 @@ export default class BookmarkCommand extends Command {
 		const model = this.editor.model;
 		const selection = model.document.selection;
 
-		model.change(modelWriter => {
+		model.change(writer => {
 			if (selection.isCollapsed) {
 				bookmarkName = bookmarkName || '';
-				const bookmark = modelWriter.createElement('bookmark', { name: bookmarkName });
+				const bookmark = writer.createElement('bookmark', { name: bookmarkName });
 				model.insertContent(bookmark);
-				modelWriter.setSelection(bookmark, 'on');
+				writer.setSelection(bookmark, 'on');
 			}
 			else {
 				const element = selection.getSelectedElement();
 				if (element && element.is('element')) {
 					if (element.hasAttribute('name')) {
-						modelWriter.setAttribute('name', bookmarkName, element);
+						writer.setAttribute('name', bookmarkName, element);
 					}
 				}
 			}

@@ -6,12 +6,13 @@ export default class BookmarkDeleteCommand extends Command {
 		const model = this.editor.model;
 		const selection = model.document.selection;
 
-		model.change(modelWriter => {
+		model.change(writer => {
 			if (!selection.isCollapsed) {
 				const element = selection.getSelectedElement();
 				if (element && element.is('element') && element.hasAttribute('name')) {
-					// on the Model, bookmark is an Element (while on the View, bookmark is an attributeElement)
-					modelWriter.remove(element);
+					// on the Model => bookmark is an Element
+					// on the View => bookmark is an attributeElement
+					writer.remove(element);
 				}
 			}
 		});
