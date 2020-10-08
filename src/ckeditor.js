@@ -49,8 +49,8 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 
-import LinkSelector from './link.selectors/link';
-import MediaSelector from './link.selectors/media';
+import LinkSelector from './selectors/link';
+import MediaSelector from './selectors/media';
 import Bookmark from './bookmark/bookmark';
 
 export default class Editor extends DecoupledDocumentEditor {}
