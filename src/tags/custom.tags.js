@@ -14,7 +14,7 @@ export default class CustomTags extends Plugin {
 	}
 
 	static get requires() {
-		return [CustomTagsUI];
+		return [CustomTagsEditing, CustomTagsUI];
 	}
 
 	static get pluginName() {
@@ -23,19 +23,13 @@ export default class CustomTags extends Plugin {
 	
 }
 
-class CustomTagsUI extends Plugin {
-
-	constructor(editor) {
-		super(editor);
-		this._config = this.editor.config.get('customTags') || [];
-	}
+class CustomTagsEditing extends Plugin {
 
 	init() {
-		this._config.forEach(customTag => this._init(
+		(this.editor.config.get('customTags') || []).forEach(customTag => this._init(
 			customTag.tag,
 			this._get(customTag.placeholder, customTag.tag),
 			this._get(customTag.attributes, {}),
-			this._get(customTag.icon, tagsIcon),
 			this._get(customTag.inline, false),
 			this._get(customTag.editable, true)
 		));
@@ -47,7 +41,7 @@ class CustomTagsUI extends Plugin {
 			: defaultValue;
 	}
 
-	_init(tag, placeholder, attributes, icon, inline, editable) {
+	_init(tag, placeholder, attributes, inline, editable) {
 		const editor = this.editor;
 
 		// allow elements with tag name in the model
@@ -122,23 +116,38 @@ class CustomTagsUI extends Plugin {
 		}));
 
 		// command
-		const name = 'custom-tags-' + tag;
-		const command = new CustomTagsCommand(editor, tag, placeholder, attributes);
-		editor.commands.add(name, command);
+		editor.commands.add('custom-tags-' + tag, new CustomTagsCommand(editor, tag, placeholder, attributes));
+	}
 
-		// toolbar button
-		editor.ui.componentFactory.add(name, locale => {
-			const button = new ButtonView(locale);
-			button.set({
-				label: tag.toUpperCase(),
-				withText: false,
-				tooltip: true,
-				icon: icon,
-				class: 'ck-' + name
+}
+
+class CustomTagsUI extends Plugin {
+	
+	constructor(editor) {
+		super(editor);
+		this._customTags = this.editor.config.get('customTags') || [];
+	}
+
+	init() {
+		const editor = this.editor;
+
+		// toolbar buttons
+		this._customTags.forEach(customTag => {
+			const name = 'custom-tags-' + customTag.tag;
+			editor.ui.componentFactory.add(name, locale => {
+				const command = editor.commands.get(name);
+				const button = new ButtonView(locale);
+				button.set({
+					label: customTag.tag.toUpperCase(),
+					withText: false,
+					tooltip: true,
+					icon: customTag.icon || tagsIcon,
+					class: 'ck-' + name
+				});
+				button.bind('isOn', 'isEnabled' ).to(command, 'value', 'isEnabled');
+				this.listenTo(button, 'execute', () => editor.execute(name));
+				return button;
 			});
-			button.bind('isOn', 'isEnabled' ).to(command, 'value', 'isEnabled');
-			this.listenTo(button, 'execute', () => editor.execute(name));
-			return button;
 		});
 	}
 

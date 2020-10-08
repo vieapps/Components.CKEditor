@@ -111,6 +111,10 @@ Editor.builtinPlugins = [
 
 // default configuration
 Editor.defaultConfig = {
+	language: {
+		ui: 'en',
+		content: 'en'
+	},
 	toolbar: {
 		items: [
 			'heading',
@@ -231,21 +235,17 @@ Editor.defaultConfig = {
 			}
 		}
 	},
-	language: {
-		ui: 'en',
-		content: 'en'
-	},
 	customTags: [
 		{
 			tag: 'div',
-			placeholder: 'DIV text goes here',
+			placeholder: 'DIV content goes here',
 			attributes: {
 				'class': 'special block'
 			}
 		},
 		{
 			tag: 'section',
-			placeholder: 'SECTION text goes here',
+			placeholder: 'SECTION content goes here',
 			attributes: {
 				'class': 'special block'
 			}
