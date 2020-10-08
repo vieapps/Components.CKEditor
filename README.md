@@ -1,6 +1,13 @@
-# CKEditor5 custom build with integration of custom link/media selectors
+# CKEditor5 custom build with integration of custom plugins
 
-This repository presents a CKEditor5 with integration of custom link/media selectors, and the CKFinder/CKFinderAdapter also removed.
+This repository presents a CKEditor5 with integration of custom plugins, and the CKFinder/CKFinderAdapter also removed.
+
+**Custom Plugins:**
+* Link/Media selectors
+* Bookmark (ckeditor5-bookmark, of RasmusRummel - https://github.com/RasmusRummel/ckeditor5-bookmark)
+* DIV/SECTION tags with all attributes
+* Custom Tags (DIV/SECTION)
+* InfoBox
 
 ## Quick start
 
