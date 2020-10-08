@@ -1,3 +1,7 @@
+// ckeditor5-bookmark
+// Author: RasmusRummel
+// Repo: https://github.com/RasmusRummel/ckeditor5-bookmark
+
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
@@ -12,8 +16,6 @@ import ViewPopup from './popups/view';
 import EditPopup from './popups/edit';
 import bookmarkCss from '../assets/bookmark.css';
 import bookmarkIcon from '../assets/icons/bookmark.svg';
-
-// ckeditor5-bookmark of RasmusRummel => https://github.com/RasmusRummel/ckeditor5-bookmark
 
 export default class Bookmark extends Plugin {
 	/**
@@ -198,7 +200,7 @@ class BookmarkUI extends Plugin {
 		return popup;
 	}
 
-	_getSelectedBookmarkElement() {
+	_getSelectedElement() {
 		const element = this.editor.editing.view.document.selection.getSelectedElement();
 		if (element && element.is('containerElement')) {
 			const bookmarkProperty = !!element.getCustomProperty('bookmarkName');
@@ -211,7 +213,7 @@ class BookmarkUI extends Plugin {
 
 	_getBalloonPositionData() {
 		const view = this.editor.editing.view;
-		const element = this._getSelectedBookmarkElement();
+		const element = this._getSelectedElement();
 		const target = element
 			? view.domConverter.mapViewToDom(element)
 			: view.domConverter.viewRangeToDom(view.document.selection.getFirstRange());
@@ -222,7 +224,7 @@ class BookmarkUI extends Plugin {
 		const editor = this.editor;
 
 		this.listenTo(editor.editing.view.document, 'click', () => {
-			const element = this._getSelectedBookmarkElement();
+			const element = this._getSelectedElement();
 			if (element) {
 				this._showUI();
 			}
@@ -244,7 +246,7 @@ class BookmarkUI extends Plugin {
 	}
 
 	_showUI() {
-		const element = this._getSelectedBookmarkElement();
+		const element = this._getSelectedElement();
 		if (element) {
 			if (element.getAttribute('name')) {
 				if (!this._balloon.hasView(this._viewPopup)) {
