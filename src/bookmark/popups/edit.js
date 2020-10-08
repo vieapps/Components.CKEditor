@@ -29,8 +29,8 @@ export default class EditPopup extends View {
 			}
 		});
 
-		this.nameInput = new InputTextView(locale);
-		this.nameInput.placeholder = 'bookmark name';
+		this.nameInputView = new InputTextView(locale);
+		this.nameInputView.placeholder = 'bookmark name';
 		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon);
 		this.saveButtonView.type = 'submit';
 		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'cancel');
@@ -42,7 +42,7 @@ export default class EditPopup extends View {
 				tabindex: '-1'
 			},
 			children: [
-				this.nameInput,
+				this.nameInputView,
 				this.saveButtonView,
 				this.cancelButtonView
 			]
@@ -55,7 +55,7 @@ export default class EditPopup extends View {
 			view: this
 		});
 
-		[this.nameInput, this.saveButtonView, this.cancelButtonView].forEach(view => {
+		[this.nameInputView, this.saveButtonView, this.cancelButtonView].forEach(view => {
 			this._focusables.add(view);
 			this.focusTracker.add(view.element);
 		});

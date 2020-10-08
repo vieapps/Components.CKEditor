@@ -157,7 +157,7 @@ class BookmarkUI extends Plugin {
 
 	_createViewPopup() {
 		const popup = new ViewPopup(this.editor.locale)
-		popup.nameLabel.bind('text').to(this.editor.commands.get('bookmark'), 'value');
+		popup.nameLabelView.bind('text').to(this.editor.commands.get('bookmark'), 'value');
 		popup.keystrokes.set('Esc', (data, cancel) => {
 			this._hideUI();
 			cancel();
@@ -169,7 +169,7 @@ class BookmarkUI extends Plugin {
 				view: this._editPopup,
 				position: this._getBalloonPositionData()
 			});
-			this._editPopup.nameInput.select();
+			this._editPopup.nameInputView.select();
 		});
 
 		this.listenTo(popup, 'delete', () => {
@@ -182,14 +182,14 @@ class BookmarkUI extends Plugin {
 
 	_createEditPopup() {
 		const popup = new EditPopup(this.editor.locale);
-		popup.nameInput.bind('value').to(this.editor.commands.get('bookmark'), 'value');
+		popup.nameInputView.bind('value').to(this.editor.commands.get('bookmark'), 'value');
 		popup.keystrokes.set('Esc', (data, cancel) => {
 			this._hideUI();
 			cancel();
 		});
 
 		this.listenTo(popup, 'submit', () => {
-			this.editor.execute('bookmark', popup.nameInput.element.value);
+			this.editor.execute('bookmark', popup.nameInputView.element.value);
 			this._hideUI();
 		});
 
@@ -262,7 +262,7 @@ class BookmarkUI extends Plugin {
 						view: this._editPopup,
 						position: this._getBalloonPositionData()
 					});
-					this._editPopup.nameInput.select();
+					this._editPopup.nameInputView.select();
 				}
 			}
 		}

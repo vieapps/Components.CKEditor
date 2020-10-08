@@ -12,7 +12,7 @@ export default class ViewPopup extends View {
 		super(locale);
 		this.keystrokes = new KeystrokeHandler();
 
-		this.nameLabel = new LabelView(locale);
+		this.nameLabelView = new LabelView(locale);
 		this.editButtonView = this._createButton(locale.t('Edit link').split(' ')[0], pencilIcon, 'edit');
 		this.deleteButtonView = this._createButton(locale.t('Unlink').split(' ')[0], unlinkIcon, 'delete');
 
@@ -22,7 +22,7 @@ export default class ViewPopup extends View {
 				class: ['ck-bookmark-view']
 			},
 			children: [
-				this.nameLabel,
+				this.nameLabelView,
 				this.editButtonView,
 				this.deleteButtonView
 			]
