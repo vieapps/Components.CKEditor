@@ -126,9 +126,7 @@ class BookmarkUI extends Plugin {
 		const editor = this.editor;
 		editor.editing.view.addObserver(ClickObserver);
 
-		// https://ckeditor.com/docs/ckeditor5/latest/api/module_ui_panel_balloon_contextualballoon-ContextualBalloon.html
 		this._balloon = editor.plugins.get(ContextualBalloon);
-		
 		this._viewPopup = this._createViewPopup();
 		this._editPopup = this._createEditPopup();
 
