@@ -25,17 +25,20 @@ export default class CustomTags extends Plugin {
 
 class CustomTagsUI extends Plugin {
 
+	constructor(editor) {
+		super(editor);
+		this._config = this.editor.config.get('customTags') || [];
+	}
+
 	init() {
-		(this.editor.config.get('customTags') || []).forEach(customTag => {
-			this._define(
-				customTag.tag,
-				this._get(customTag.placeholder, customTag.tag),
-				this._get(customTag.attributes, {}),
-				this._get(customTag.icon, tagsIcon),
-				this._get(customTag.inline, false),
-				this._get(customTag.editable, true)
-			);
-		});
+		this._config.forEach(customTag => this._init(
+			customTag.tag,
+			this._get(customTag.placeholder, customTag.tag),
+			this._get(customTag.attributes, {}),
+			this._get(customTag.icon, tagsIcon),
+			this._get(customTag.inline, false),
+			this._get(customTag.editable, true)
+		));
 	}
 
 	_get(input, defaultValue) {
@@ -44,21 +47,7 @@ class CustomTagsUI extends Plugin {
 			: defaultValue;
 	}
 
-	_define(tag, placeholder, attributes, icon, inline, editable) {
-		// schema
-		this._defineSchema(tag, inline);
-		
-		// conversions
-		this._defineConversions(tag, editable);
-
-		// command
-		this.editor.commands.add('custom-tags-' + tag, new CustomTagsCommand(this.editor, tag, placeholder, attributes));
-
-		// toolbar button
-		this._createToolbarButton(tag, icon);
-	}
-
-	_defineSchema(tag, inline) {
+	_init(tag, placeholder, attributes, icon, inline, editable) {
 		const editor = this.editor;
 
 		// allow elements with tag name in the model
@@ -82,10 +71,6 @@ class CustomTagsUI extends Plugin {
 				return true;
 			}
 		});
-	}
-
-	_defineConversions(tag, editable) {
-		const editor = this.editor;
 
 		// the view-to-model converter converting a view with all its attributes to the model
 		editor.conversion.for('upcast').elementToElement({
@@ -106,6 +91,7 @@ class CustomTagsUI extends Plugin {
 				model: tag,
 				view: (modelItem, { writer: viewWriter }) => {
 					const widgetElement = viewWriter.createContainerElement(tag);
+					viewWriter.setCustomProperty('customTag', true, widgetElement);
 					return toWidgetEditable(widgetElement, viewWriter);
 				}
 			}
@@ -113,6 +99,7 @@ class CustomTagsUI extends Plugin {
 				model: tag,
 				view: (modelItem, { writer: viewWriter }) => {
 					const widgetElement = viewWriter.createContainerElement(tag);
+					viewWriter.setCustomProperty('customTag', true, widgetElement);
 					return toWidget(widgetElement, viewWriter);
 				}
 			}
@@ -133,13 +120,14 @@ class CustomTagsUI extends Plugin {
 				}
 			}
 		}));
-	}
 
-	_createToolbarButton(tag, icon) {
-		const editor = this.editor;
+		// command
 		const name = 'custom-tags-' + tag;
+		const command = new CustomTagsCommand(editor, tag, placeholder, attributes);
+		editor.commands.add(name, command);
+
+		// toolbar button
 		editor.ui.componentFactory.add(name, locale => {
-			const command = editor.commands.get(name);
 			const button = new ButtonView(locale);
 			button.set({
 				label: tag.toUpperCase(),
