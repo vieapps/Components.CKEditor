@@ -55,15 +55,9 @@ export default class EditPopup extends View {
 			view: this
 		});
 
-		const childViews = [
-			this.nameInput,
-			this.saveButtonView,
-			this.cancelButtonView
-		];
-
-		childViews.forEach(v => {
-			this._focusables.add(v);
-			this.focusTracker.add(v.element);
+		[this.nameInput, this.saveButtonView, this.cancelButtonView].forEach(view => {
+			this._focusables.add(view);
+			this.focusTracker.add(view.element);
 		});
 		this.keystrokes.listenTo(this.element);
 	}
