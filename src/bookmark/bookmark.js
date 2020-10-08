@@ -3,7 +3,6 @@
 // Repo: https://github.com/RasmusRummel/ckeditor5-bookmark
 
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
@@ -37,22 +36,16 @@ export default class Bookmark extends Plugin {
 
 class BookmarkEditing extends Plugin {
 
-	static get requires() {
-		return [Widget];
+	constructor(editor) {
+		super(editor);
+		this._css = (editor.config.get('bookmark') || {}).css;
 	}
 
 	init() {
 		const editor = this.editor;
-		const config = editor.config.get('bookmark') || {};
-		this._defineSchema();
-		this._defineConverters();
-		this._css = config.css;
-		editor.commands.add('bookmark', new BookmarkCommand(editor));
-		editor.commands.add('deleteBookmark', new BookmarkDeleteCommand(editor));
-	}
 
-	_defineSchema() {
-		this.editor.model.schema.register(
+		// schema
+		editor.model.schema.register(
 			'bookmark',
 			{
 				allowWhere: '$text',
@@ -62,12 +55,9 @@ class BookmarkEditing extends Plugin {
 				allowAttributes: ['name', 'class']
 			}
 		);
-	}
 
-	_defineConverters() {
-		const conversion = this.editor.conversion;
-
-		conversion.attributeToAttribute({
+		// conversions
+		editor.conversion.attributeToAttribute({
 			model: {
 				name: 'bookmark',
 				key: 'name'
@@ -77,7 +67,7 @@ class BookmarkEditing extends Plugin {
 			}
 		});
 
-		conversion.for('upcast').elementToElement({
+		editor.conversion.for('upcast').elementToElement({
 			view: {
 				name: 'a',
 				attributes: {
@@ -91,7 +81,7 @@ class BookmarkEditing extends Plugin {
 			}
 		});
 
-		conversion.for('editingDowncast').elementToElement({
+		editor.conversion.for('editingDowncast').elementToElement({
 			model: 'bookmark',
 			view: (modelItem, { writer: viewWriter }) => {
 				const name = modelItem.getAttribute('name');
@@ -101,7 +91,7 @@ class BookmarkEditing extends Plugin {
 			}
 		});
 
-		conversion.for('dataDowncast').elementToElement({
+		editor.conversion.for('dataDowncast').elementToElement({
 			model: 'bookmark',
 			view: (modelItem, { writer: viewWriter }) => {
 				const name = modelItem.getAttribute('name');
@@ -109,6 +99,10 @@ class BookmarkEditing extends Plugin {
 				return bookmark;
 			}
 		});
+
+		// commands
+		editor.commands.add('bookmark', new BookmarkCommand(editor));
+		editor.commands.add('deleteBookmark', new BookmarkDeleteCommand(editor));
 	}
 
 }
