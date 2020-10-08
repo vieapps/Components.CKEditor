@@ -154,10 +154,8 @@ class BookmarkUI extends Plugin {
 	}
 
 	_createViewPopup() {
-		const editor = this.editor;
-
-		const popup = new ViewPopup(editor.locale)
-		popup.nameLabel.bind('text').to(editor.commands.get('bookmark'), 'value');
+		const popup = new ViewPopup(this.editor.locale)
+		popup.nameLabel.bind('text').to(this.editor.commands.get('bookmark'), 'value');
 		popup.keystrokes.set('Esc', (data, cancel) => {
 			this._hideUI();
 			cancel();
@@ -181,17 +179,15 @@ class BookmarkUI extends Plugin {
 	}
 
 	_createEditPopup() {
-		const editor = this.editor;
-
-		const popup = new EditPopup(editor.locale);
-		popup.nameInput.bind('value').to(editor.commands.get('bookmark'), 'value');
+		const popup = new EditPopup(this.editor.locale);
+		popup.nameInput.bind('value').to(this.editor.commands.get('bookmark'), 'value');
 		popup.keystrokes.set('Esc', (data, cancel) => {
 			this._hideUI();
 			cancel();
 		});
 
 		this.listenTo(popup, 'submit', () => {
-			editor.execute('bookmark', popup.nameInput.element.value);
+			this.editor.execute('bookmark', popup.nameInput.element.value);
 			this._hideUI();
 		});
 
