@@ -1,8 +1,13 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
+import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
+import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
+import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
 
+import { defineTagSchema, defineTagConversions, getTagAttributes } from './utils';
+import ViewPopup from './popup.view';
+import EditPopup from './popup.edit';
 import tagsCss from '../assets/tags.css';
 import tagsIcon from '../assets/icons/tag.svg';
 
@@ -26,13 +31,20 @@ export default class CustomTags extends Plugin {
 class CustomTagsEditing extends Plugin {
 
 	init() {
-		(this.editor.config.get('customTags') || []).forEach(customTag => this._init(
+		const editor = this.editor;
+		(editor.config.get('customTags') || []).forEach(customTag => this._init(
+			editor,
 			customTag.tag,
 			this._get(customTag.placeholder, customTag.tag),
-			this._get(customTag.attributes, {}),
-			this._get(customTag.inline, false),
-			this._get(customTag.editable, true)
+			this._get(customTag.attributes, {})
 		));
+		editor.commands.add('update-custom-tags', new UpdateCustomTagsCommand(editor));
+	}
+
+	_init(editor, tag, placeholder, attributes) {
+		defineTagSchema(editor, tag);
+		defineTagConversions(editor, tag);
+		editor.commands.add('create-custom-tags-' + tag, new CreateCustomTagsCommand(editor, tag, placeholder, attributes));
 	}
 
 	_get(input, defaultValue) {
@@ -41,119 +53,160 @@ class CustomTagsEditing extends Plugin {
 			: defaultValue;
 	}
 
-	_init(tag, placeholder, attributes, inline, editable) {
-		const editor = this.editor;
-
-		// allow elements with tag name in the model
-		const schema = {
-			isObject: true,
-			isBlock:  true,
-			allowContentOf: '$root'
-		};
-		if (inline) {
-			schema.allowWhere = '$block';
-		}
-		else {
-			schema.allowIn = '$root';
-		}
-		editor.model.schema.register(tag, schema);
-		editor.model.schema.extend('$block', { allowIn: tag });
-
-		// allow elements in the model to have all attributes
-		editor.model.schema.addAttributeCheck(context => {
-			if (context.endsWith(tag)) {
-				return true;
-			}
-		});
-
-		// the view-to-model converter converting a view with all its attributes to the model
-		editor.conversion.for('upcast').elementToElement({
-			view: tag,
-			model: (viewElement, { writer: modelWriter }) => {
-				return modelWriter.createElement(tag, viewElement.getAttributes());
-			}
-		});
-
-		// the model-to-view converter for the element (attributes are converted separately)
-		editor.conversion.for('downcast').elementToElement({
-			model: tag,
-			view: tag
-		});
-
-		editor.conversion.for('editingDowncast').elementToElement(editable
-		? {
-				model: tag,
-				view: (modelItem, { writer: viewWriter }) => {
-					const widgetElement = viewWriter.createContainerElement(tag);
-					viewWriter.setCustomProperty('isCustomTag', true, widgetElement);
-					return toWidgetEditable(widgetElement, viewWriter);
-				}
-			}
-		: {
-				model: tag,
-				view: (modelItem, { writer: viewWriter }) => {
-					const widgetElement = viewWriter.createContainerElement(tag);
-					viewWriter.setCustomProperty('isCustomTag', true, widgetElement);
-					return toWidget(widgetElement, viewWriter);
-				}
-			}
-		);
-
-		// the model-to-view converter for the element attributes
-		// note that a lower-level, event-based API is used here
-		editor.conversion.for('downcast').add(dispatcher => dispatcher.on('attribute', (event, data, conversionApi) => {
-			if (data.item.name == tag) {
-				// in the model-to-view conversion we convert changes, an attribute can be added or removed or changed
-				const writer = conversionApi.writer;
-				const view = conversionApi.mapper.toViewElement(data.item);
-				if (data.attributeNewValue) {
-					writer.setAttribute(data.attributeKey, data.attributeNewValue, view);
-				}
-				else {
-					writer.removeAttribute(data.attributeKey, view);
-				}
-			}
-		}));
-
-		// command
-		editor.commands.add('custom-tags-' + tag, new CustomTagsCommand(editor, tag, placeholder, attributes));
-	}
-
 }
 
 class CustomTagsUI extends Plugin {
 	
 	constructor(editor) {
 		super(editor);
-		this._customTags = this.editor.config.get('customTags') || [];
+		this._customTags = editor.config.get('customTags') || [];
+	}
+
+	static get requires() {
+		return [ContextualBalloon];
+	}
+
+	static get pluginName() {
+		return 'CustomTagsUI';
 	}
 
 	init() {
 		const editor = this.editor;
+		editor.editing.view.addObserver(ClickObserver);
+		this._balloon = editor.plugins.get(ContextualBalloon);
 
-		// toolbar buttons
-		this._customTags.forEach(customTag => {
-			const name = 'custom-tags-' + customTag.tag;
-			editor.ui.componentFactory.add(name, locale => {
-				const command = editor.commands.get(name);
-				const button = new ButtonView(locale);
-				button.set({
-					label: customTag.tag.toUpperCase(),
-					withText: false,
-					tooltip: true,
-					icon: customTag.icon || tagsIcon,
-					class: 'ck-' + name
-				});
-				button.bind('isOn', 'isEnabled' ).to(command, 'value', 'isEnabled');
-				this.listenTo(button, 'execute', () => editor.execute(name));
-				return button;
+		this._createViewPopup();
+		this._createEditPopup();
+
+		this._customTags.forEach(customTag => editor.ui.componentFactory.add('custom-tags-' + customTag.tag, locale => {
+			const command = editor.commands.get('create-custom-tags-' + customTag.tag);
+			const button = new ButtonView(locale);
+			button.set({
+				label: customTag.tag.toUpperCase(),
+				withText: false,
+				tooltip: true,
+				icon: customTag.icon || tagsIcon,
+				class: 'ck-custom-tags-' + customTag.tag
 			});
+			button.bind('isEnabled', 'isOn').to(command, 'isEnabled', 'value');
+			this.listenTo(button, 'execute', () => editor.execute('create-custom-tags-' + customTag.tag));
+			return button;
+		}));
+
+		this._enableUserBalloonInteractions();
+	}
+
+	_createViewPopup() {
+		if (this._viewPopup === undefined) {
+			this._viewPopup = new ViewPopup(this.editor.locale)
+			this._viewPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
+			this.listenTo(this._viewPopup, 'edit', () => {
+				this._balloon.remove(this._viewPopup);
+				const element = this._getSelectedElement();
+				this._createEditPopup(getTagAttributes(element), true);
+				this._balloon.add({
+					view: this._editPopup,
+					position: this._getBalloonPositionData()
+				});
+				this._editPopup.tagLabelView.set('text', element.name);
+			});
+		}
+		return this._viewPopup;
+	}
+
+	_createEditPopup(attributes, force) {
+		if (!!force) {
+			this._editPopup = undefined;
+		}
+		if (this._editPopup === undefined) {
+			this._editPopup = new EditPopup(this.editor.locale, attributes);
+			this._editPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
+			this.listenTo(this._editPopup, 'submit', () => {
+				this.editor.execute('update-custom-tags', this._getSelectedElement(), this._editPopup.attributes);
+				this._hideUI();
+			});
+			this.listenTo(this._editPopup, 'cancel', () => this._hideUI());
+		}
+		return this._editPopup;
+	}
+
+	_cancelPopupOnEscKey(cancel) {
+		this._hideUI();
+		cancel();
+	}
+
+	_getSelectedElement() {
+		const selection = this.editor.editing.view.document.selection;
+		let element = selection.getSelectedElement();
+		if (!element) {
+			element = selection.getFirstPosition().parent;
+		}
+		else if (element.is('containerElement') && !!element.getCustomProperty('isBookmark')) {
+			element =  undefined;
+		}
+		if (element) {
+			while (element && (!element.name || this._customTags.findIndex(customTag => customTag.tag == element.name) < 0)) {
+				element = element.parent;
+				if (element && (element.name == 'figure' || element.name == 'figcaption')) {
+					element =  undefined;
+				}
+			}
+		}
+		return element && element.is('containerElement') && !!element.getCustomProperty('isCustomTag')
+			? element
+			: undefined;
+	}
+
+	_getBalloonPositionData() {
+		const view = this.editor.editing.view;
+		const element = this._getSelectedElement();
+		const target = element
+			? view.domConverter.mapViewToDom(element)
+			: view.domConverter.viewRangeToDom(view.document.selection.getFirstRange());
+		return { target };
+	}
+
+	_enableUserBalloonInteractions() {
+		const editor = this.editor;
+		this.listenTo(editor.editing.view.document, 'click', () => this._showUI(this._getSelectedElement()));
+		editor.keystrokes.set('Esc', (data, cancel) => {
+			if (this._balloon.hasView(this._viewPopup) || (this._editPopup !== undefined && this._balloon.hasView(this._editPopup))) {
+				this._cancelPopupOnEscKey(cancel);
+			}
 		});
+
+		clickOutsideHandler({
+			emitter: this._viewPopup,
+			activator: () => this._balloon.visibleView === this._viewPopup || (this._editPopup !== undefined && this._balloon.visibleView == this._editPopup),
+			contextElements: [this._balloon.view.element],
+			callback: () => this._hideUI()
+		});
+	}
+
+	_showUI(element) {
+		if (element && !this._balloon.hasView(this._viewPopup)) {
+			this._viewPopup.tagLabelView.set('text', element.name);
+			this._balloon.add({
+				view: this._viewPopup,
+				position: this._getBalloonPositionData()
+			});
+		}
+	}
+
+	_hideUI() {
+		if (this._balloon.hasView(this._viewPopup)) {
+			this._balloon.remove(this._viewPopup);
+		}
+		if (this._editPopup !== undefined && this._balloon.hasView(this._editPopup)) {
+			this._balloon.remove(this._editPopup);
+			this._editPopup = undefined;
+		}
+		this.editor.editing.view.focus();
 	}
 
 }
 
-class CustomTagsCommand extends Command {
+class CreateCustomTagsCommand extends Command {
 
 	constructor(editor, tag, placeholder, attributes) {
 		super(editor);
@@ -167,11 +220,42 @@ class CustomTagsCommand extends Command {
 		model.change(writer => {
 			const element = writer.createElement(this.tag, this.attributes);
 			model.insertContent(element, model.document.selection.getFirstPosition());
-			const placeholder = writer.createElement('paragraph');
-			writer.appendText(this.placeholder, placeholder);
-			writer.append(placeholder, element);
-			writer.setSelection(placeholder, 'on');
+			if (this.tag === 'div' || this.tag === 'section') {
+				const placeholder = writer.createElement('paragraph');
+				writer.appendText(this.placeholder, placeholder);
+				writer.append(placeholder, element);
+				writer.setSelection(placeholder, 'on');
+			}
+			else {
+				writer.appendText(this.placeholder, element);
+				writer.setSelection(element, 'on');
+			}
 		});
 	};
+	
+}
+
+class UpdateCustomTagsCommand extends Command {
+	
+	execute(viewElement, updatedAttributes) {
+		const editor = this.editor;
+		const model = editor.model;
+		const modelElement = editor.editing.mapper.toModelElement(viewElement);
+		if (viewElement && modelElement) {
+			const currentAttributes = getTagAttributes(viewElement);
+			model.change(writer => {
+				Array.from(currentAttributes.keys()).forEach(name => {
+					if ((updatedAttributes.get(name) || '').trim() == '') {
+						writer.removeAttribute(name, modelElement);
+					}
+				});
+				updatedAttributes.forEach((value, name) => writer.setAttribute(name, value, modelElement));
+			});
+		}
+	};
+
+	refresh() {
+		this.isEnabled = true;
+	}
 	
 }

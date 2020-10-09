@@ -148,6 +148,7 @@ Editor.defaultConfig = {
 			'bookmark',
 			'custom-tags-div',
 			'custom-tags-section',
+			'custom-tags-span',
 			'highlight',
 			'horizontalLine',
 			'pageBreak',
@@ -246,6 +247,13 @@ Editor.defaultConfig = {
 		{
 			tag: 'section',
 			placeholder: 'SECTION content goes here',
+			attributes: {
+				'class': 'special block'
+			}
+		},
+		{
+			tag: 'span',
+			placeholder: 'Text content goes here',
 			attributes: {
 				'class': 'special block'
 			}
