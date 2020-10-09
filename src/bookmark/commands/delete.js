@@ -1,6 +1,6 @@
 import Command from '@ckeditor/ckeditor5-core/src/command';
 
-export default class BookmarkDeleteCommand extends Command {
+export default class DeleteBookmarkCommand extends Command {
 	
 	execute() {
 		const model = this.editor.model;

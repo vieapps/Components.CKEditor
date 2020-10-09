@@ -1,6 +1,6 @@
 ﻿import Command from '@ckeditor/ckeditor5-core/src/command';
 
-export default class BookmarkCommand extends Command {
+export default class UpdateBookmarkCommand extends Command {
 	
 	constructor(editor) {
 		super(editor);

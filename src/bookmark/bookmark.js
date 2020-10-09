@@ -9,8 +9,8 @@ import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobs
 import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
 import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
 
-import BookmarkCommand from './commands/create';
-import BookmarkDeleteCommand from './commands/delete';
+import UpdateBookmarkCommand from './commands/update';
+import DeleteBookmarkCommand from './commands/delete';
 import ViewPopup from './popups/view';
 import EditPopup from './popups/edit';
 import bookmarkCss from '../assets/bookmark.css';
@@ -101,8 +101,8 @@ class BookmarkEditing extends Plugin {
 		});
 
 		// commands
-		editor.commands.add('bookmark', new BookmarkCommand(editor));
-		editor.commands.add('deleteBookmark', new BookmarkDeleteCommand(editor));
+		editor.commands.add('bookmark', new UpdateBookmarkCommand(editor));
+		editor.commands.add('deleteBookmark', new DeleteBookmarkCommand(editor));
 	}
 
 }
@@ -130,15 +130,14 @@ class BookmarkUI extends Plugin {
 			const button = new ButtonView(locale);
 			button.set({
 				label: editor.t('Bookmark'),
-				withText: false,
 				tooltip: true,
 				icon: bookmarkIcon
 			});
 			button.bind('isEnabled', 'isOn').to(command, 'isEnabled', 'isBookmark');
 
 			this.listenTo(button, 'execute', () => {
-				this.editor.execute('bookmark');
-				this._showUI();
+				editor.execute('bookmark');
+				this._showUI(this._getSelectedElement());
 			});
 
 			return button;
@@ -189,22 +188,16 @@ class BookmarkUI extends Plugin {
 			this._hideUI();
 		});
 
-		this.listenTo(popup, 'cancel', () => {
-			this._hideUI();
-		});
+		this.listenTo(popup, 'cancel', () => this._hideUI());
 
 		return popup;
 	}
 
 	_getSelectedElement() {
 		const element = this.editor.editing.view.document.selection.getSelectedElement();
-		if (element && element.is('containerElement')) {
-			const isBookmark = !!element.getCustomProperty('isBookmark');
-			if (isBookmark) {
-				return element;
-			}
-		}
-		return undefined;
+		return element && element.is('containerElement') && !!element.getCustomProperty('isBookmark')
+			? element
+			: undefined;
 	}
 
 	_getBalloonPositionData() {
@@ -219,12 +212,7 @@ class BookmarkUI extends Plugin {
 	_enableUserBalloonInteractions() {
 		const editor = this.editor;
 
-		this.listenTo(editor.editing.view.document, 'click', () => {
-			const element = this._getSelectedElement();
-			if (element) {
-				this._showUI();
-			}
-		});
+		this.listenTo(editor.editing.view.document, 'click', () => this._showUI(this._getSelectedElement()));
 
 		editor.keystrokes.set('Esc', (data, cancel) => {
 			if (this._balloon.hasView(this._viewPopup) || this._balloon.hasView(this._editPopup)) {
@@ -241,8 +229,7 @@ class BookmarkUI extends Plugin {
 		});
 	}
 
-	_showUI() {
-		const element = this._getSelectedElement();
+	_showUI(element) {
 		if (element) {
 			if (element.getAttribute('name')) {
 				if (!this._balloon.hasView(this._viewPopup)) {
