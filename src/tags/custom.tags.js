@@ -85,7 +85,7 @@ class CustomTagsEditing extends Plugin {
 				model: tag,
 				view: (modelItem, { writer: viewWriter }) => {
 					const widgetElement = viewWriter.createContainerElement(tag);
-					viewWriter.setCustomProperty('customTag', true, widgetElement);
+					viewWriter.setCustomProperty('isCustomTag', true, widgetElement);
 					return toWidgetEditable(widgetElement, viewWriter);
 				}
 			}
@@ -93,7 +93,7 @@ class CustomTagsEditing extends Plugin {
 				model: tag,
 				view: (modelItem, { writer: viewWriter }) => {
 					const widgetElement = viewWriter.createContainerElement(tag);
-					viewWriter.setCustomProperty('customTag', true, widgetElement);
+					viewWriter.setCustomProperty('isCustomTag', true, widgetElement);
 					return toWidget(widgetElement, viewWriter);
 				}
 			}
