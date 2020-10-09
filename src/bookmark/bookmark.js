@@ -86,7 +86,7 @@ class BookmarkEditing extends Plugin {
 			view: (modelItem, { writer: viewWriter }) => {
 				const name = modelItem.getAttribute('name');
 				const bookmark = viewWriter.createContainerElement('span', { name, class: 'ck-bookmark' });
-				viewWriter.setCustomProperty('bookmarkName', true, bookmark);
+				viewWriter.setCustomProperty('isBookmark', true, bookmark);
 				return toWidget(bookmark, viewWriter);
 			}
 		});
@@ -134,8 +134,7 @@ class BookmarkUI extends Plugin {
 				tooltip: true,
 				icon: bookmarkIcon
 			});
-			button.bind('isEnabled').to(command, 'isEnabled');
-			button.bind('isOn').to(command, 'isBookmark');
+			button.bind('isEnabled', 'isOn').to(command, 'isEnabled', 'isBookmark');
 
 			this.listenTo(button, 'execute', () => {
 				this.editor.execute('bookmark');
@@ -149,8 +148,10 @@ class BookmarkUI extends Plugin {
 	}
 
 	_createViewPopup() {
-		const popup = new ViewPopup(this.editor.locale)
-		popup.nameLabelView.bind('text').to(this.editor.commands.get('bookmark'), 'value');
+		const editor = this.editor;
+
+		const popup = new ViewPopup(editor.locale)
+		popup.nameLabelView.bind('text').to(editor.commands.get('bookmark'), 'value');
 		popup.keystrokes.set('Esc', (data, cancel) => {
 			this._hideUI();
 			cancel();
@@ -166,7 +167,7 @@ class BookmarkUI extends Plugin {
 		});
 
 		this.listenTo(popup, 'delete', () => {
-			this.editor.execute('deleteBookmark');
+			editor.execute('deleteBookmark');
 			this._hideUI();
 		});
 
@@ -174,15 +175,17 @@ class BookmarkUI extends Plugin {
 	}
 
 	_createEditPopup() {
-		const popup = new EditPopup(this.editor.locale);
-		popup.nameInputView.bind('value').to(this.editor.commands.get('bookmark'), 'value');
+		const editor = this.editor;
+
+		const popup = new EditPopup(editor.locale);
+		popup.nameInputView.bind('value').to(editor.commands.get('bookmark'), 'value');
 		popup.keystrokes.set('Esc', (data, cancel) => {
 			this._hideUI();
 			cancel();
 		});
 
 		this.listenTo(popup, 'submit', () => {
-			this.editor.execute('bookmark', popup.nameInputView.element.value);
+			editor.execute('bookmark', popup.nameInputView.element.value);
 			this._hideUI();
 		});
 
@@ -196,8 +199,8 @@ class BookmarkUI extends Plugin {
 	_getSelectedElement() {
 		const element = this.editor.editing.view.document.selection.getSelectedElement();
 		if (element && element.is('containerElement')) {
-			const bookmarkProperty = !!element.getCustomProperty('bookmarkName');
-			if (bookmarkProperty) {
+			const isBookmark = !!element.getCustomProperty('isBookmark');
+			if (isBookmark) {
 				return element;
 			}
 		}
