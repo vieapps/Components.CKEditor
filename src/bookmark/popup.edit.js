@@ -51,11 +51,12 @@ export default class EditPopup extends View {
 
 	render() {
 		super.render();
-		submitHandler({
-			view: this
-		});
-
-		[this.nameInputView, this.saveButtonView, this.cancelButtonView].forEach(view => {
+		submitHandler({ view: this });
+		[
+			this.nameInputView,
+			this.saveButtonView,
+			this.cancelButtonView
+		].forEach(view => {
 			this._focusables.add(view);
 			this.focusTracker.add(view.element);
 		});

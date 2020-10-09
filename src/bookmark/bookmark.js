@@ -3,16 +3,15 @@
 // Repo: https://github.com/RasmusRummel/ckeditor5-bookmark
 
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
+import Command from '@ckeditor/ckeditor5-core/src/command';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
 import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
 import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
+import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
 
-import UpdateBookmarkCommand from './commands/update';
-import DeleteBookmarkCommand from './commands/delete';
-import ViewPopup from './popups/view';
-import EditPopup from './popups/edit';
+import ViewPopup from './popup.view';
+import EditPopup from './popup.edit';
 import bookmarkCss from '../assets/bookmark.css';
 import bookmarkIcon from '../assets/icons/bookmark.svg';
 
@@ -57,7 +56,8 @@ class BookmarkEditing extends Plugin {
 		);
 
 		// conversions
-		editor.conversion.attributeToAttribute({
+		const conversion = editor.conversion;
+		conversion.attributeToAttribute({
 			model: {
 				name: 'bookmark',
 				key: 'name'
@@ -67,7 +67,7 @@ class BookmarkEditing extends Plugin {
 			}
 		});
 
-		editor.conversion.for('upcast').elementToElement({
+		conversion.for('upcast').elementToElement({
 			view: {
 				name: 'a',
 				attributes: {
@@ -81,7 +81,7 @@ class BookmarkEditing extends Plugin {
 			}
 		});
 
-		editor.conversion.for('editingDowncast').elementToElement({
+		conversion.for('editingDowncast').elementToElement({
 			model: 'bookmark',
 			view: (modelItem, { writer: viewWriter }) => {
 				const name = modelItem.getAttribute('name');
@@ -91,7 +91,7 @@ class BookmarkEditing extends Plugin {
 			}
 		});
 
-		editor.conversion.for('dataDowncast').elementToElement({
+		conversion.for('dataDowncast').elementToElement({
 			model: 'bookmark',
 			view: (modelItem, { writer: viewWriter }) => {
 				const name = modelItem.getAttribute('name');
@@ -119,9 +119,10 @@ class BookmarkUI extends Plugin {
 
 	init() {
 		const editor = this.editor;
-		editor.editing.view.addObserver(ClickObserver);
 
+		editor.editing.view.addObserver(ClickObserver);
 		this._balloon = editor.plugins.get(ContextualBalloon);
+
 		this._viewPopup = this._createViewPopup();
 		this._editPopup = this._createEditPopup();
 
@@ -129,14 +130,14 @@ class BookmarkUI extends Plugin {
 			const command = editor.commands.get('bookmark');
 			const button = new ButtonView(locale);
 			button.set({
-				label: editor.t('Bookmark'),
+				label: 'Bookmark',
 				tooltip: true,
 				icon: bookmarkIcon
 			});
 			button.bind('isEnabled', 'isOn').to(command, 'isEnabled', 'isBookmark');
 
 			this.listenTo(button, 'execute', () => {
-				editor.execute('bookmark');
+				this.editor.execute('bookmark');
 				this._showUI(this._getSelectedElement());
 			});
 
@@ -166,7 +167,7 @@ class BookmarkUI extends Plugin {
 		});
 
 		this.listenTo(popup, 'delete', () => {
-			editor.execute('deleteBookmark');
+			this.editor.execute('deleteBookmark');
 			this._hideUI();
 		});
 
@@ -184,7 +185,7 @@ class BookmarkUI extends Plugin {
 		});
 
 		this.listenTo(popup, 'submit', () => {
-			editor.execute('bookmark', popup.nameInputView.element.value);
+			this.editor.execute('bookmark', popup.nameInputView.element.value);
 			this._hideUI();
 		});
 
@@ -211,9 +212,7 @@ class BookmarkUI extends Plugin {
 
 	_enableUserBalloonInteractions() {
 		const editor = this.editor;
-
 		this.listenTo(editor.editing.view.document, 'click', () => this._showUI(this._getSelectedElement()));
-
 		editor.keystrokes.set('Esc', (data, cancel) => {
 			if (this._balloon.hasView(this._viewPopup) || this._balloon.hasView(this._editPopup)) {
 				this._hideUI();
@@ -239,14 +238,12 @@ class BookmarkUI extends Plugin {
 					});
 				}
 			}
-			else {
-				if (!this._balloon.hasView(this._editPopup)) {
-					this._balloon.add({
-						view: this._editPopup,
-						position: this._getBalloonPositionData()
-					});
-					this._editPopup.nameInputView.select();
-				}
+			else if (!this._balloon.hasView(this._editPopup)) {
+				this._balloon.add({
+					view: this._editPopup,
+					position: this._getBalloonPositionData()
+				});
+				this._editPopup.nameInputView.select();
 			}
 		}
 	}
@@ -256,10 +253,79 @@ class BookmarkUI extends Plugin {
 			this._balloon.remove(this._viewPopup);
 		}
 		if (this._balloon.hasView(this._editPopup)) {
-			this._editPopup.saveButtonView.focus();
 			this._balloon.remove(this._editPopup);
 		}
 		this.editor.editing.view.focus();
+	}
+
+}
+
+class UpdateBookmarkCommand extends Command {
+	
+	constructor(editor) {
+		super(editor);
+		this.isBookmark = false;
+	}
+
+	execute(bookmarkName) {
+		const model = this.editor.model;
+		const selection = model.document.selection;
+		model.change(writer => {
+			if (selection.isCollapsed) {
+				bookmarkName = bookmarkName || '';
+				const bookmark = writer.createElement('bookmark', { name: bookmarkName });
+				model.insertContent(bookmark);
+				writer.setSelection(bookmark, 'on');
+			}
+			else {
+				const element = selection.getSelectedElement();
+				if (element && element.is('element')) {
+					if (element.hasAttribute('name')) {
+						writer.setAttribute('name', bookmarkName, element);
+					}
+				}
+			}
+		});
+	}
+
+	refresh() {
+		const model = this.editor.model;
+		const selection = model.document.selection;
+		const element = selection.getSelectedElement();
+		this.isBookmark = false;
+		if (element) {
+			this.value = element.getAttribute('name');
+			this.isBookmark = element.hasAttribute('name');
+		}
+		else {
+			this.value = null;
+			this.isBookmark = false;
+		}
+		this.isEnabled = model.schema.checkChild(selection.focus.parent, 'bookmark');
+	}
+	
+}
+
+class DeleteBookmarkCommand extends Command {
+	
+	execute() {
+		const model = this.editor.model;
+		const selection = model.document.selection;
+		model.change(writer => {
+			if (!selection.isCollapsed) {
+				const element = selection.getSelectedElement();
+				if (element && element.is('element') && element.hasAttribute('name')) {
+					// on the Model => bookmark is an Element
+					// on the View => bookmark is an attributeElement
+					writer.remove(element);
+				}
+			}
+		});
+	}
+
+	refresh() {
+		// MUST always be true, otherwise the command cannot execute;
+		this.isEnabled = true;
 	}
 
 }
