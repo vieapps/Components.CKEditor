@@ -289,10 +289,10 @@ class UpdateBookmarkCommand extends Command {
 	}
 
 	refresh() {
+		this.isBookmark = false;
 		const model = this.editor.model;
 		const selection = model.document.selection;
 		const element = selection.getSelectedElement();
-		this.isBookmark = false;
 		if (element) {
 			this.value = element.getAttribute('name');
 			this.isBookmark = element.hasAttribute('name');

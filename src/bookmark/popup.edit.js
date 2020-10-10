@@ -31,20 +31,29 @@ export default class EditPopup extends View {
 
 		this.nameInputView = new InputTextView(locale);
 		this.nameInputView.placeholder = 'bookmark name';
-		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon);
+
+		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon, 'ck-button-save');
 		this.saveButtonView.type = 'submit';
-		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'cancel');
+		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'ck-button-cancel', 'cancel');
 
 		this.setTemplate({
 			tag: 'form',
 			attributes: {
-				class: ['ck-bookmark-edit'],
+				class: ['ck ck-form ck-bookmark'],
 				tabindex: '-1'
 			},
 			children: [
-				this.nameInputView,
-				this.saveButtonView,
-				this.cancelButtonView
+				{
+					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row']
+					},
+					children: [
+						this.nameInputView,
+						this.saveButtonView,
+						this.cancelButtonView
+					]
+				}
 			]
 		});
 	}
@@ -67,11 +76,12 @@ export default class EditPopup extends View {
 		this._focusCycler.focusFirst();
 	}
 
-	_createButton(label, icon, event) {
+	_createButton(label, icon, css, event) {
 		const button = new ButtonView(this.locale);
 		button.set({
 			label: label,
 			icon: icon,
+			class: css,
 			withText: false,
 			tooltip: true
 		});

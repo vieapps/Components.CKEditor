@@ -19,12 +19,20 @@ export default class ViewPopup extends View {
 		this.setTemplate({
 			tag: 'div',
 			attributes: {
-				class: ['ck-bookmark-view']
+				class: ['ck ck-form ck-bookmark']
 			},
 			children: [
-				this.nameLabelView,
-				this.editButtonView,
-				this.deleteButtonView
+				{
+					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row']
+					},
+					children: [
+						this.nameLabelView,
+						this.editButtonView,
+						this.deleteButtonView
+					]
+				}
 			]
 		});
 	}
