@@ -2,6 +2,7 @@ import View from '@ckeditor/ckeditor5-ui/src/view';
 import LabelView from '@ckeditor/ckeditor5-ui/src/label/labelview';
 import InputTextView from '@ckeditor/ckeditor5-ui/src/inputtext/inputtextview';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
+import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview';
 import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
 import submitHandler from '@ckeditor/ckeditor5-ui/src/bindings/submithandler';
 import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
@@ -13,12 +14,14 @@ import { addListToDropdown, createDropdown } from '@ckeditor/ckeditor5-ui/src/dr
 
 import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
 import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
+import objectLeftIcon from '@ckeditor/ckeditor5-core/theme/icons/object-left.svg';
+import objectCenterIcon from '@ckeditor/ckeditor5-core/theme/icons/object-center.svg';
+import objectRightIcon from '@ckeditor/ckeditor5-core/theme/icons/object-right.svg';
 
 export default class EditPopup extends View {
 
 	constructor(locale, attributes) {
 		super(locale);
-		this._attributes = attributes || new Map();
 
 		this.keystrokes = new KeystrokeHandler();
 		this.focusTracker = new FocusTracker();
@@ -34,47 +37,220 @@ export default class EditPopup extends View {
 			}
 		});
 
+		this._attributes = attributes || new Map();
+		this._parseStyle(this._attributes.get('style'));
+		this._width = this._styles.get('width') || '';
+		this._height = this._styles.get('height') || '';
+		this._alignment = this._styles.get('float') || 'center';
+
 		this.tagLabelView = new LabelView(locale);
+
+		const dimensionsLabelView = new LabelView(locale);
+		dimensionsLabelView.text = locale.t('Dimensions');
+		
+		const widthInputView = new InputTextView(locale);
+		widthInputView.bind('value').to(this, '_width');
+		widthInputView.on('input', () => {
+			this._width = widthInputView.element.value || '';
+			if (this._width != '') {
+				this._styles.set('width', this._width);
+			}
+			else {
+				this._styles.delete('width');
+			}
+			this._setStyle();
+		});
+
+		const widthLabelView = new LabelView(locale);
+		widthLabelView.text = locale.t('Width');
+		
+		const operatorLabel = new View(locale);
+		operatorLabel.setTemplate( {
+			tag: 'span',
+			children: [
+				{ text: '×' }
+			]
+		});
+
+		const heightInputView = new InputTextView(locale);
+		heightInputView.bind('value').to(this, '_height');
+		heightInputView.on('input', () => {
+			this._height = heightInputView.element.value || '';
+			if (this._height != '') {
+				this._styles.set('height', this._height);
+			}
+			else {
+				this._styles.delete('height');
+			}
+			this._setStyle();
+		});
+
+		const heightLabelView = new LabelView(locale);
+		heightLabelView.text = locale.t('Height');
+
+		const alignmentLabelView = new LabelView(locale);
+		alignmentLabelView.text = locale.t('Alignment');
+
+		const alignmentToolbarView = new ToolbarView(locale);
+		alignmentToolbarView.set({
+			isCompact: true,
+			ariaLabel: locale.t('Alignment toolbar')
+		});
+
+		this.leftAlignButtonView = new ButtonView(locale);
+		this.leftAlignButtonView.set({
+			label: locale.t('Left alignment'),
+			tooltip: locale.t('Left alignment'),
+			icon: objectLeftIcon,
+			isOn: this._alignment == 'left'
+		});
+		this.leftAlignButtonView.on('execute', () => {
+			this._alignment = 'left';
+			this._styles.set('float', this._alignment);
+			this._setStyle();
+			this._setToolbarButtonIsOnStates();
+		});
+		alignmentToolbarView.items.add(this.leftAlignButtonView);
+
+		this.centerAlignButtonView = new ButtonView(locale);
+		this.centerAlignButtonView.set({
+			label: locale.t('Center alignment'),
+			tooltip: locale.t('Center alignment'),
+			icon: objectCenterIcon,
+			isOn: this._alignment == 'center'
+		});
+		this.centerAlignButtonView.on('execute', () => {
+			this._alignment = 'center';
+			this._styles.delete('float');
+			this._setStyle();
+			this._setToolbarButtonIsOnStates();
+		});
+		alignmentToolbarView.items.add(this.centerAlignButtonView);
+
+		this.rightAlignButtonView = new ButtonView(locale);
+		this.rightAlignButtonView.set({
+			label: locale.t('Right alignment'),
+			tooltip: locale.t('Right alignment'),
+			icon: objectRightIcon,
+			isOn: this._alignment == 'right'
+		});
+		this.rightAlignButtonView.on('execute', () => {
+			this._alignment = 'right';
+			this._styles.set('float', this._alignment);
+			this._setStyle();
+			this._setToolbarButtonIsOnStates();
+		});
+		alignmentToolbarView.items.add(this.rightAlignButtonView);
 
 		this.attributesDropdownView = createDropdown(locale);
 		addListToDropdown(this.attributesDropdownView, this._getAttributesAsDropdownItems());
 		this.attributesDropdownView.buttonView.set({
-			label: 'Update or create new',
+			label: 'Select to create new or update an attribute',
 			tooltip: true,
 			withText: true
 		});
-		this.listenTo(this.attributesDropdownView, 'execute', event => this._switch(event.source.commandParam));
+		this.listenTo(this.attributesDropdownView, 'execute', event => this._switch(event.source.name));
 
 		this.nameInputView = new InputTextView(locale);
-		this.nameInputView.placeholder = 'name';
+		this.nameInputView.set({ placeholder: 'name' });
 
 		this.valueInputView = new InputTextView(locale);
-		this.valueInputView.placeholder = 'value';
+		this.valueInputView.set({ placeholder: 'value' });
 
-		this.updateButtonView = this._createButton(locale.t('Update'), checkIcon, undefined, false);
+		this.updateButtonView = new ButtonView(locale);
+		this.updateButtonView.set({
+			label: locale.t('Update'),
+			icon: checkIcon,
+			class: 'update',
+			withText: false,
+			tooltip: true
+		});
 		this.listenTo(this.updateButtonView, 'execute', () => this._update());
 
-		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon);
+		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon, 'ck-button-save');
 		this.saveButtonView.type = 'submit';
-		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'cancel');
+		this.listenTo(this.saveButtonView, 'execute', () => this._update(true));
+
+		this.cancelButtonView = this._createButton(locale.t('Cancel'), cancelIcon, 'ck-button-cancel', 'cancel');
 
 		this.setTemplate({
 			tag: 'form',
 			attributes: {
-				class: ['ck-custom-tags-edit'],
+				class: ['ck ck-form ck-custom-tags'],
 				tabindex: '-1'
 			},
 			children: [
 				{
 					tag: 'section',
+					attributes: {
+						class: ['ck ck-form__header']
+					},
 					children: [
 						this.tagLabelView
 					]
 				},
 				{
 					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row']
+					},
 					children: [
-						this.attributesDropdownView,
+						{
+							tag: 'div',
+							attributes: {
+								class: ['ck-dimensions']
+							},
+							children: [
+								dimensionsLabelView,
+								{
+									tag: 'div',
+									children: [
+										{
+											tag: 'div',
+											children: [
+												widthInputView,
+												widthLabelView
+											]
+										},
+										operatorLabel,
+										{
+											tag: 'div',
+											children: [
+												heightInputView,
+												heightLabelView
+											]
+										}
+									]
+								}
+							]
+						},
+						{
+							tag: 'div',
+							attributes: {
+								class: ['ck-alignments']
+							},
+							children: [
+								alignmentLabelView,
+								alignmentToolbarView
+							]
+						}
+					]
+				},
+				{
+					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row']
+					},
+					children: [
+						this.attributesDropdownView
+					]
+				},
+				{
+					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row inputs']
+					},
+					children: [
 						this.nameInputView,
 						this.valueInputView,
 						this.updateButtonView
@@ -82,6 +258,9 @@ export default class EditPopup extends View {
 				},
 				{
 					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row buttons']
+					},
 					children: [
 						this.saveButtonView,
 						this.cancelButtonView
@@ -112,15 +291,11 @@ export default class EditPopup extends View {
 		this._focusCycler.focusFirst();
 	}
 
-	get attributes() {
-		return this._attributes;
-	}
-
 	_switch(name) {
-		this._isCreateNew = name === undefined || name === '';
-		this.nameInputView.element.value = this._isCreateNew ? '' : name;
-		this.valueInputView.element.value = this._isCreateNew ? '' : this._attributes.get(name) || '';
-		if (this._isCreateNew) {
+		const isCreateNew = name === undefined || name === '' || !this._attributes.has(name);
+		this.nameInputView.element.value = isCreateNew ? '' : name;
+		this.valueInputView.element.value = isCreateNew ? '' : this._attributes.get(name) || '';
+		if (isCreateNew) {
 			this.nameInputView.focus();
 		}
 		else {
@@ -128,29 +303,46 @@ export default class EditPopup extends View {
 		}
 	}
 
-	_update() {
+	_update(dontSetFocus) {
 		const name = (this.nameInputView.element.value || '').trim();
 		if (name !== '') {
-			const value = (this.valueInputView.element.value || '').trim();
-			this._attributes.set(name, value);
-			if (this._isCreateNew) {
-				const items = new Collection();
-				items.add({
-					type: 'button',
-					model: new Model({
-						commandParam: name,
-						label: name,
-						withText: true
-					})
-				});
-				addListToDropdown(this.attributesDropdownView, items);
-				this._isCreateNew = false;
+			const isCreateNew = !this._attributes.has(name);
+
+			let value = (this.valueInputView.element.value || '').trim();
+			if (name == 'style') {
+				this._parseStyle(value);
+				this._width = this._styles.get('width') || '';
+				this._height = this._styles.get('height') || '';
+				this._alignment = this._styles.get('float') || 'center';
+				if (!dontSetFocus) {
+					this._setToolbarButtonIsOnStates();
+				}
+				value = this._getStyle();
 			}
-			this.nameInputView.element.value = '';
-			this.valueInputView.element.value = '';
-			this.attributesDropdownView.focus();
+			else if (name == 'class') {
+				value = value.trim().split(' ').map(data => data.trim()).filter(data => data != '').join(' ');
+			}
+			this._attributes.set(name, value);
+
+			if (!dontSetFocus) {
+				if (isCreateNew) {
+					const items = new Collection();
+					items.add({
+						type: 'button',
+						model: new Model({
+							name: name,
+							label: name,
+							withText: true
+						})
+					});
+					addListToDropdown(this.attributesDropdownView, items);
+				}
+				this.nameInputView.element.value = '';
+				this.valueInputView.element.value = '';
+				this.attributesDropdownView.focus();
+			}
 		}
-		else {
+		else if (!dontSetFocus) {
 			this.nameInputView.focus();
 		}
 	}
@@ -160,35 +352,67 @@ export default class EditPopup extends View {
 		items.add({
 			type: 'button',
 			model: new Model({
-				commandParam: '',
+				name: '',
 				label: '- create new -',
 				withText: true
 			})
 		});
 		items.add({ type: 'separator' });
-		Array.from(this._attributes.keys()).forEach(key => items.add({
+		Array.from(this._attributes.keys()).forEach(name => items.add({
 			type: 'button',
 			model: new Model({
-				commandParam: key,
-				label: key,
+				name: name,
+				label: name,
 				withText: true
 			})
 		}));
 		return items;
 	}
+	
+	_parseStyle(style) {
+		this._styles = new Map();
+		(style || '').trim().split(';').map(data => data.trim()).filter(data => data != '').forEach(data => {
+			const kvp = data.split(':');
+			if (kvp.length > 1) {
+				this._styles.set(kvp[0], kvp.slice(1).join(':'));
+			}
+		});
+		return this._styles;
+	}
 
-	_createButton(label, icon, event, withText) {
+	_getStyle() {
+		let style = '';
+		(this._styles || new Map()).forEach((value, key) => style += `${key}:${value};`);
+		return style;
+	}
+
+	_setStyle() {
+		this._attributes.set('style', this._getStyle());
+	}
+
+	_setToolbarButtonIsOnStates() {
+		this.leftAlignButtonView.set({ isOn: this._alignment == 'left' });
+		this.centerAlignButtonView.set({ isOn: this._alignment == 'center' });
+		this.rightAlignButtonView.set({ isOn: this._alignment == 'right' });
+	}
+
+	_createButton(label, icon, css, event) {
 		const button = new ButtonView(this.locale);
 		button.set({
 			label: label,
 			icon: icon,
-			withText: withText !== undefined ? !!withText : true,
+			class: css,
+			withText: true,
 			tooltip: false
 		});
 		if (event) {
 			button.delegate('execute').to(this, event);
 		}
 		return button;
+	}
+
+	get attributes() {
+		return this._attributes;
 	}
 
 }

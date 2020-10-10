@@ -13,47 +13,56 @@
 .ck-content span.special {
   border: dashed .5px #bbb;
 }
-.ck-custom-tags-view,
-.ck-custom-tags-edit {
-  margin: 8px !important;
+.ck-content div.special.box,
+.ck-content section.special.box {
+  border: solid 2px yellowgreen;
+  border-radius: 10px;
+  padding: var(--ck-spacing-large);
+  margin: var(--ck-spacing-large);
 }
-.ck-custom-tags-view > section > label,
-.ck-custom-tags-edit > section > label {
-  margin: 2px 8px 8px !important;
+.ck-content div.special.box > h2,
+.ck-content section.special.box > h2 {
+  margin-top: 10px;
+  padding-bottom: var(--ck-spacing-large);
+  border-bottom: solid 3px #008a00;
+}
+.ck-form.ck-custom-tags .ck-form__header {
   text-transform: uppercase;
 }
-.ck-custom-tags-view button .ck-icon {
-  margin-right: 12px !important;
+.ck-form.ck-custom-tags .ck-form__row .ck-button .ck-icon {
+  margin-right: var(--ck-spacing-large);
 }
-.ck-custom-tags-edit > div {
+.ck-form.ck-custom-tags .ck-form__row .ck-input-text {
+  min-width: unset;
+  width: auto;
+}
+.ck-form.ck-custom-tags .ck-form__row .ck-dimensions {
+  width: 435px;
+}
+.ck-form.ck-custom-tags .ck-form__row .ck-dimensions > div {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  align-items: center;
 }
-.ck-custom-tags-edit > div > input:first-of-type {
-  width: 130px !important;
-  min-width: 130px !important;
+.ck-form.ck-custom-tags .ck-form__row .ck-dimensions > div > span {
+  margin: 0 var(--ck-spacing-standard);
 }
-.ck-custom-tags-edit > div > input:last-of-type {
-  width: 300px !important;
-  min-width: 300px !important;
+.ck-form.ck-custom-tags .ck-form__row .ck-dimensions > div > div > .ck-label {
+  font-weight: normal;
 }
-.ck-custom-tags-edit > div:first-of-type > button {
-  margin-left: 5px !important;
+.ck-form.ck-custom-tags .ck-form__row .ck-dimensions > div > div > .ck-input-text,
+.ck-form.ck-custom-tags .ck-form__row.inputs .ck-input-text:first-of-type {
+  width: 100px;
+}
+.ck-form.ck-custom-tags .ck-form__row.inputs .ck-input-text:last-of-type {
+  width: 400px;
+}
+.ck-form.ck-custom-tags .ck-form__row.inputs .ck-button.update {
   color: blue;
 }
-.ck-custom-tags-edit > div:last-of-type {
-  padding: 8px 0;
+.ck-form.ck-custom-tags .ck-form__row.buttons {
+  padding-top: var(--ck-spacing-large);
 }
-.ck-custom-tags-edit > div:last-of-type > button {
-  width: 50% !important;
-  margin: 15px 5px 5px !important;
-  display: inline-block !important;
-}
-.ck-custom-tags-edit > div:last-of-type > button:first-of-type {
-  color: #008a00;
-}
-.ck-custom-tags-edit > div:last-of-type > button:last-of-type {
-  color: #db3700;
+.ck-form.ck-custom-tags .ck-form__row.buttons .ck-button.ck-button_with-text {
+  justify-content: center;
 }

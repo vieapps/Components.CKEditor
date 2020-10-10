@@ -6,7 +6,7 @@ This repository presents a CKEditor5 build with integration of some useful custo
 * Link/Media Selectors
 * Bookmark (ckeditor5-bookmark, of RasmusRummel - https://github.com/RasmusRummel/ckeditor5-bookmark)
 * Special tags with all standard/custom attributes are allowed (custom tags are included), pre-defined: DIV, SECTION and SPAN
-* InfoBox
+* InfoBox (as a special DIV tag)
 
 ## Quick start
 

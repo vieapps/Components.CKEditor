@@ -1,15 +1,17 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 import Command from '@ckeditor/ckeditor5-core/src/command';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
 import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
 import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
 
-import { defineTagSchema, defineTagConversions, getTagAttributes } from './utils';
+import { defineSchema, defineConversions, getAttributes } from './utils';
 import ViewPopup from './popup.view';
 import EditPopup from './popup.edit';
 import tagsCss from '../assets/tags.css';
 import tagsIcon from '../assets/icons/tag.svg';
+import boxIcon from '../assets/icons/box.svg';
 
 export default class CustomTags extends Plugin {
 
@@ -30,9 +32,15 @@ export default class CustomTags extends Plugin {
 
 class CustomTagsEditing extends Plugin {
 
+	static get requires() {
+		return [ Widget ];
+	}
+
 	init() {
 		const editor = this.editor;
-		(editor.config.get('customTags') || []).forEach(customTag => this._init(
+		const config = editor.config.get('customTags') || {};
+		const customTags = config.tags || [];
+		customTags.forEach(customTag => this._init(
 			editor,
 			customTag.tag,
 			this._get(customTag.placeholder, customTag.tag),
@@ -42,8 +50,8 @@ class CustomTagsEditing extends Plugin {
 	}
 
 	_init(editor, tag, placeholder, attributes) {
-		defineTagSchema(editor, tag);
-		defineTagConversions(editor, tag);
+		defineSchema(editor, tag);
+		defineConversions(editor, tag);
 		editor.commands.add('create-custom-tags-' + tag, new CreateCustomTagsCommand(editor, tag, placeholder, attributes));
 	}
 
@@ -59,7 +67,10 @@ class CustomTagsUI extends Plugin {
 	
 	constructor(editor) {
 		super(editor);
-		this._customTags = editor.config.get('customTags') || [];
+		const config = editor.config.get('customTags') || {};
+		const customTags = config.tags || [];
+		this.knownTags = new Set(customTags.map(customTag => customTag.tag).concat(config.included || []));
+		this.bypassTags = new Set(config.excluded || []);
 	}
 
 	static get requires() {
@@ -78,7 +89,9 @@ class CustomTagsUI extends Plugin {
 		this._createViewPopup();
 		this._createEditPopup();
 
-		this._customTags.forEach(customTag => editor.ui.componentFactory.add('custom-tags-' + customTag.tag, locale => {
+		const config = editor.config.get('customTags') || {};
+		const customTags = config.tags || [];
+		customTags.forEach(customTag => editor.ui.componentFactory.add('custom-tags-' + customTag.tag, locale => {
 			const command = editor.commands.get('create-custom-tags-' + customTag.tag);
 			const button = new ButtonView(locale);
 			button.set({
@@ -93,6 +106,22 @@ class CustomTagsUI extends Plugin {
 			return button;
 		}));
 
+		if (customTags.findIndex(customTag => customTag.tag == 'div') > -1) {
+			editor.ui.componentFactory.add('box', locale => {
+				const command = editor.commands.get('create-custom-tags-div');
+				const button = new ButtonView(locale);
+				button.set({
+					label: 'Box',
+					withText: false,
+					tooltip: true,
+					icon: boxIcon
+				});
+				button.bind('isEnabled', 'isOn').to(command, 'isEnabled', 'value');
+				this.listenTo(button, 'execute', () => editor.execute('create-custom-tags-div', { class: 'special box', style: 'width:300px;float:right;' }, 'Box Content', 'Box Title'));
+				return button;
+			});
+		}
+
 		this._enableUserBalloonInteractions();
 	}
 
@@ -103,7 +132,7 @@ class CustomTagsUI extends Plugin {
 			this.listenTo(this._viewPopup, 'edit', () => {
 				this._balloon.remove(this._viewPopup);
 				const element = this._getSelectedElement();
-				this._createEditPopup(getTagAttributes(element), true);
+				this._createEditPopup(getAttributes(element), true);
 				this._balloon.add({
 					view: this._editPopup,
 					position: this._getBalloonPositionData()
@@ -135,24 +164,24 @@ class CustomTagsUI extends Plugin {
 		cancel();
 	}
 
+	_isKnownElement(element) {
+		return element.name && this.knownTags.findIndex(tag => tag == element.name) > -1;
+	}
+
 	_getSelectedElement() {
 		const selection = this.editor.editing.view.document.selection;
-		let element = selection.getSelectedElement();
-		if (!element) {
-			element = selection.getFirstPosition().parent;
-		}
-		else if (element.is('containerElement') && !!element.getCustomProperty('isBookmark')) {
-			element =  undefined;
-		}
-		if (element) {
-			while (element && (!element.name || this._customTags.findIndex(customTag => customTag.tag == element.name) < 0)) {
-				element = element.parent;
-				if (element && (element.name == 'figure' || element.name == 'figcaption')) {
-					element =  undefined;
-				}
+		let element = selection.getSelectedElement() || selection.getFirstPosition().parent;
+		while (!!element) {
+			if (element.name && this.knownTags.has(element.name)) {
+				break;
+			}
+			else {
+				element = element.name && this.bypassTags.has(element.name)
+					? undefined
+					: element.parent;
 			}
 		}
-		return element && element.is('containerElement') && !!element.getCustomProperty('isCustomTag')
+		return element && element.is('containerElement') && element.name && this.knownTags.has(element.name) && !!element.getCustomProperty('isCustomTag')
 			? element
 			: undefined;
 	}
@@ -215,19 +244,26 @@ class CreateCustomTagsCommand extends Command {
 		this.attributes = attributes;
 	};
 
-	execute() {
+	execute(attributes, content, title) {
 		const model = this.editor.model;
 		model.change(writer => {
-			const element = writer.createElement(this.tag, this.attributes);
+			const element = writer.createElement(this.tag, attributes || this.attributes);
 			model.insertContent(element, model.document.selection.getFirstPosition());
 			if (this.tag === 'div' || this.tag === 'section') {
-				const placeholder = writer.createElement('paragraph');
-				writer.appendText(this.placeholder, placeholder);
-				writer.append(placeholder, element);
-				writer.setSelection(placeholder, 'on');
+				if (title && title != '') {
+					const heading = writer.createElement('heading1');
+					writer.appendText(title, heading);
+					writer.append(heading, element);
+				}
+				const paragraph = writer.createElement('paragraph');
+				writer.appendText(content || this.placeholder, paragraph);
+				writer.append(paragraph, element);
+				if (!title) {
+					writer.setSelection(paragraph, 'on');
+				}
 			}
 			else {
-				writer.appendText(this.placeholder, element);
+				writer.appendText(content || this.placeholder, element);
 				writer.setSelection(element, 'on');
 			}
 		});
@@ -239,11 +275,10 @@ class UpdateCustomTagsCommand extends Command {
 	
 	execute(viewElement, updatedAttributes) {
 		const editor = this.editor;
-		const model = editor.model;
 		const modelElement = editor.editing.mapper.toModelElement(viewElement);
 		if (viewElement && modelElement) {
-			const currentAttributes = getTagAttributes(viewElement);
-			model.change(writer => {
+			const currentAttributes = getAttributes(viewElement, true);
+			editor.model.change(writer => {
 				Array.from(currentAttributes.keys()).forEach(name => {
 					if ((updatedAttributes.get(name) || '').trim() == '') {
 						writer.removeAttribute(name, modelElement);

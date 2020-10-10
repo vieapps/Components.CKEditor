@@ -14,7 +14,7 @@ export default class ViewPopup extends View {
 		this.tagLabelView = new LabelView(locale);
 		this.editButtonView = new ButtonView(this.locale);
 		this.editButtonView.set({
-			label: 'Update attributes',
+			label: 'Update tag attributes',
 			icon: icon,
 			withText: true,
 			tooltip: false
@@ -24,16 +24,27 @@ export default class ViewPopup extends View {
 		this.setTemplate({
 			tag: 'div',
 			attributes: {
-				class: ['ck-custom-tags-view']
+				class: ['ck ck-form ck-custom-tags']
 			},
 			children: [
 				{
 					tag: 'section',
+					attributes: {
+						class: ['ck ck-form__header']
+					},
 					children: [
 						this.tagLabelView
 					]
 				},
-				this.editButtonView
+				{
+					tag: 'div',
+					attributes: {
+						class: ['ck ck-form__row']
+					},
+					children: [
+						this.editButtonView
+					]
+				}
 			]
 		});
 	}

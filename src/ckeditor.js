@@ -149,6 +149,7 @@ Editor.defaultConfig = {
 			'custom-tags-div',
 			'custom-tags-section',
 			'custom-tags-span',
+			'box',
 			'highlight',
 			'horizontalLine',
 			'pageBreak',
@@ -219,13 +220,6 @@ Editor.defaultConfig = {
 					target: '_blank'
 				}
 			},
-			toggleDownloadable: {
-				mode: 'manual',
-				label: 'Downloadable',
-				attributes: {
-					download: 'file'
-				}
-			},
 			relNoOpenerNoReferrer: {
 				mode: 'manual',
 				label: 'noopener/noreferrer',
@@ -236,27 +230,31 @@ Editor.defaultConfig = {
 			}
 		}
 	},
-	customTags: [
-		{
-			tag: 'div',
-			placeholder: 'DIV content goes here',
-			attributes: {
-				'class': 'special block'
+	customTags: {
+		tags: [
+			{
+				tag: 'div',
+				placeholder: 'DIV content goes here',
+				attributes: {
+					'class': 'special block'
+				}
+			},
+			{
+				tag: 'section',
+				placeholder: 'SECTION content goes here',
+				attributes: {
+					'class': 'special block'
+				}
+			},
+			{
+				tag: 'span',
+				placeholder: 'Text content goes here',
+				attributes: {
+					'class': 'special text'
+				}
 			}
-		},
-		{
-			tag: 'section',
-			placeholder: 'SECTION content goes here',
-			attributes: {
-				'class': 'special block'
-			}
-		},
-		{
-			tag: 'span',
-			placeholder: 'Text content goes here',
-			attributes: {
-				'class': 'special block'
-			}
-		}
-	]
+		],
+		included: [],
+		excluded: ['figure', 'figcaption', 'bookmark']
+	}
 };
