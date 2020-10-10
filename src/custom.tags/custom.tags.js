@@ -5,8 +5,8 @@ import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
 import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
 import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
+import { toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
 
-import { defineSchema, defineConversions, getAttributes } from './utils';
 import ViewPopup from './popup.view';
 import EditPopup from './popup.edit';
 import tagsCss from '../assets/tags.css';
@@ -33,32 +33,92 @@ export default class CustomTags extends Plugin {
 class CustomTagsEditing extends Plugin {
 
 	static get requires() {
-		return [ Widget ];
+		return [Widget];
 	}
 
 	init() {
 		const editor = this.editor;
 		const config = editor.config.get('customTags') || {};
 		const customTags = config.tags || [];
-		customTags.forEach(customTag => this._init(
-			editor,
-			customTag.tag,
-			this._get(customTag.placeholder, customTag.tag),
-			this._get(customTag.attributes, {})
-		));
+		customTags.forEach(customTag => {
+			this._defineSchema(customTag.tag);
+			this._defineConversions(customTag.tag);
+			editor.commands.add('create-custom-tags-' + customTag.tag, new CreateCustomTagsCommand(editor, customTag.tag, this._get(customTag.placeholder, customTag.tag), this._get(customTag.attributes, {})));
+		});
 		editor.commands.add('update-custom-tags', new UpdateCustomTagsCommand(editor));
-	}
-
-	_init(editor, tag, placeholder, attributes) {
-		defineSchema(editor, tag);
-		defineConversions(editor, tag);
-		editor.commands.add('create-custom-tags-' + tag, new CreateCustomTagsCommand(editor, tag, placeholder, attributes));
 	}
 
 	_get(input, defaultValue) {
 		return typeof input !== 'undefined' && (input || input === false || input === 0)
 			? input
 			: defaultValue;
+	}
+
+	_defineSchema(tag) {
+		const editor = this.editor;
+		const isDivOrSection = tag === 'div' || tag === 'section';
+
+		// allow elements with tag name in the model
+		editor.model.schema.register(
+			tag,
+			{
+				isObject: true,
+				isBlock: isDivOrSection,
+				isLimit: !isDivOrSection,
+				allowContentOf: isDivOrSection ? '$root' : '$block',
+				allowWhere: isDivOrSection ? '$block' : '$text'
+			}
+		);
+		editor.model.schema.extend(isDivOrSection ? '$block' : '$text', { allowIn: tag });
+	
+		// allow elements in the model to have all attributes
+		editor.model.schema.addAttributeCheck(context => {
+			if (context.endsWith(tag)) {
+				return true;
+			}
+		});
+	}
+
+	_defineConversions(tag) {
+		const editor = this.editor;
+
+		// the view-to-model converter converting a view with all its attributes to the model
+		editor.conversion.for('upcast').elementToElement({
+			view: tag,
+			model: (viewElement, { writer: modelWriter }) => {
+				return modelWriter.createElement(tag, viewElement.getAttributes());
+			}
+		});
+	
+		// the model-to-view converter for the element (attributes are converted separately)
+		editor.conversion.for('dataDowncast').elementToElement({
+			model: tag,
+			view: tag
+		});
+	
+		editor.conversion.for('editingDowncast').elementToElement({
+			model: tag,
+			view: (modelItem, { writer: viewWriter }) => {
+				const element = viewWriter.createContainerElement(tag);
+				viewWriter.setCustomProperty('isCustomTag', true, element);
+				return toWidgetEditable(element, viewWriter);
+			}
+		});
+	
+		// the model-to-view converter for the element attributes (note that a lower-level, event-based API is used here)
+		editor.conversion.for('downcast').add(dispatcher => dispatcher.on('attribute', (event, data, conversionApi) => {
+			if (data.item.name == tag) {
+				// in the model-to-view conversion we convert changes, an attribute can be added or removed or changed
+				const writer = conversionApi.writer;
+				const view = conversionApi.mapper.toViewElement(data.item);
+				if (data.attributeNewValue) {
+					writer.setAttribute(data.attributeKey, data.attributeNewValue, view);
+				}
+				else {
+					writer.removeAttribute(data.attributeKey, view);
+				}
+			}
+		}));
 	}
 
 }
@@ -132,7 +192,7 @@ class CustomTagsUI extends Plugin {
 			this.listenTo(this._viewPopup, 'edit', () => {
 				this._balloon.remove(this._viewPopup);
 				const element = this._getSelectedElement();
-				this._createEditPopup(getAttributes(element), true);
+				this._createEditPopup(this._getAttributes(element), true);
 				this._balloon.add({
 					view: this._editPopup,
 					position: this._getBalloonPositionData()
@@ -151,7 +211,8 @@ class CustomTagsUI extends Plugin {
 			this._editPopup = new EditPopup(this.editor.locale, attributes);
 			this._editPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
 			this.listenTo(this._editPopup, 'submit', () => {
-				this.editor.execute('update-custom-tags', this._getSelectedElement(), this._editPopup.attributes);
+				const element = this._getSelectedElement();
+				this.editor.execute('update-custom-tags', element, this._getAttributes(element, true), this._editPopup.attributes);
 				this._hideUI();
 			});
 			this.listenTo(this._editPopup, 'cancel', () => this._hideUI());
@@ -164,8 +225,48 @@ class CustomTagsUI extends Plugin {
 		cancel();
 	}
 
-	_isKnownElement(element) {
-		return element.name && this.knownTags.findIndex(tag => tag == element.name) > -1;
+	_getAttributes(element, getAll) {
+		const tagAttributes = new Map();
+		const classes = Array.from((element._classes || new Set()).values());
+		if (classes.length > 0) {
+			tagAttributes.set('class', classes.join(' '));
+		}
+		const styles = (element._styles || {})._styles || {};
+		let style = '';
+		Object.keys(styles).forEach(name => {
+			const value = styles[name];
+			style += value && typeof value == 'string' ? `${name}:${value};` : '';
+		});
+		const background = styles.background;
+		if (background) {
+			Object.keys(background).forEach(name => style += `background-${name}:${background[name]};`);
+		}
+		const margin = styles.margin;
+		if (margin) {
+			Object.keys(margin).forEach(name => style += `margin-${name}:${margin[name]};`);
+		}
+		const padding = styles.padding;
+		if (padding) {
+			Object.keys(padding).forEach(name => style += `padding-${name}:${padding[name]};`);
+		}
+		const border = styles.border;
+		if (border && border.color && border.style && border.width) {
+			Object.keys(border.width).forEach(name => style += `border-${name}:${border.width[name]} ${border.style[name]} ${border.color[name]};`);
+		}
+		if (style !== '') {
+			tagAttributes.set('style', style);
+		}
+		const attributes = element._attrs || new Map();
+		attributes.forEach((value, name) => {
+			if (getAll) {
+				tagAttributes.set(name, value);
+			}
+			else if (!styles[name] && !name.startsWith('background') && !name.startsWith('block') && name != 'alignment' && name != 'padding') {
+				tagAttributes.set(name, value);
+			}
+		});
+		tagAttributes.delete('contenteditable');
+		return tagAttributes;
 	}
 
 	_getSelectedElement() {
@@ -273,11 +374,10 @@ class CreateCustomTagsCommand extends Command {
 
 class UpdateCustomTagsCommand extends Command {
 	
-	execute(viewElement, updatedAttributes) {
+	execute(viewElement, currentAttributes, updatedAttributes) {
 		const editor = this.editor;
 		const modelElement = editor.editing.mapper.toModelElement(viewElement);
 		if (viewElement && modelElement) {
-			const currentAttributes = getAttributes(viewElement, true);
 			editor.model.change(writer => {
 				Array.from(currentAttributes.keys()).forEach(name => {
 					if ((updatedAttributes.get(name) || '').trim() == '') {
