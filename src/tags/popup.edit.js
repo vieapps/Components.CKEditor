@@ -52,13 +52,7 @@ export default class EditPopup extends View {
 		widthInputView.bind('value').to(this, '_width');
 		widthInputView.on('input', () => {
 			this._width = widthInputView.element.value || '';
-			if (this._width != '') {
-				this._styles.set('width', this._width);
-			}
-			else {
-				this._styles.delete('width');
-			}
-			this._setStyle();
+			this._updateStyle('width', this._width);
 		});
 
 		const widthLabelView = new LabelView(locale);
@@ -76,13 +70,7 @@ export default class EditPopup extends View {
 		heightInputView.bind('value').to(this, '_height');
 		heightInputView.on('input', () => {
 			this._height = heightInputView.element.value || '';
-			if (this._height != '') {
-				this._styles.set('height', this._height);
-			}
-			else {
-				this._styles.delete('height');
-			}
-			this._setStyle();
+			this._updateStyle('height', this._height);
 		});
 
 		const heightLabelView = new LabelView(locale);
@@ -106,9 +94,8 @@ export default class EditPopup extends View {
 		});
 		this.leftAlignButtonView.on('execute', () => {
 			this._alignment = 'left';
-			this._styles.set('float', this._alignment);
-			this._setStyle();
 			this._setToolbarButtonIsOnStates();
+			this._updateStyle('float', this._alignment);
 		});
 		alignmentToolbarView.items.add(this.leftAlignButtonView);
 
@@ -121,9 +108,8 @@ export default class EditPopup extends View {
 		});
 		this.centerAlignButtonView.on('execute', () => {
 			this._alignment = 'center';
-			this._styles.delete('float');
-			this._setStyle();
 			this._setToolbarButtonIsOnStates();
+			this._updateStyle('float');
 		});
 		alignmentToolbarView.items.add(this.centerAlignButtonView);
 
@@ -136,9 +122,8 @@ export default class EditPopup extends View {
 		});
 		this.rightAlignButtonView.on('execute', () => {
 			this._alignment = 'right';
-			this._styles.set('float', this._alignment);
-			this._setStyle();
 			this._setToolbarButtonIsOnStates();
+			this._updateStyle('float', this._alignment);
 		});
 		alignmentToolbarView.items.add(this.rightAlignButtonView);
 
@@ -152,10 +137,14 @@ export default class EditPopup extends View {
 		this.listenTo(this.attributesDropdownView, 'execute', event => this._switch(event.source.name));
 
 		this.nameInputView = new InputTextView(locale);
-		this.nameInputView.set({ placeholder: 'name' });
+		this.nameInputView.set({
+			placeholder: 'name'
+		});
 
 		this.valueInputView = new InputTextView(locale);
-		this.valueInputView.set({ placeholder: 'value' });
+		this.valueInputView.set({
+			placeholder: 'value'
+		});
 
 		this.updateButtonView = new ButtonView(locale);
 		this.updateButtonView.set({
@@ -311,13 +300,13 @@ export default class EditPopup extends View {
 			let value = (this.valueInputView.element.value || '').trim();
 			if (name == 'style') {
 				this._parseStyle(value);
-				this._width = this._styles.get('width') || '';
-				this._height = this._styles.get('height') || '';
-				this._alignment = this._styles.get('float') || 'center';
+				value = this._getStyle();
 				if (!dontSetFocus) {
+					this._width = this._styles.get('width') || '';
+					this._height = this._styles.get('height') || '';
+					this._alignment = this._styles.get('float') || 'center';
 					this._setToolbarButtonIsOnStates();
 				}
-				value = this._getStyle();
 			}
 			else if (name == 'class') {
 				value = value.trim().split(' ').map(data => data.trim()).filter(data => data != '').join(' ');
@@ -386,7 +375,13 @@ export default class EditPopup extends View {
 		return style;
 	}
 
-	_setStyle() {
+	_updateStyle(name, value) {
+		if (value && value != '' && value != ';') {
+			this._styles.set(name, value);
+		}
+		else {
+			this._styles.delete(name);
+		}
 		this._attributes.set('style', this._getStyle());
 	}
 
