@@ -19,9 +19,24 @@
   border-radius: 10px;
   padding: var(--ck-spacing-large);
   margin: var(--ck-spacing-large);
+  max-width: 100%;
+}
+.ck-content div.special.box.left,
+.ck-content section.special.box.left {
+	float: left;
+	clear: none;
+}
+.ck-content div.special.box.right,
+.ck-content section.special.box.right {
+	float: right;
+	clear: none;
 }
 .ck-content div.special.box > h2,
-.ck-content section.special.box > h2 {
+.ck-content section.special.box > h2,
+.ck-content div.special.box > h3,
+.ck-content section.special.box > h3,
+.ck-content div.special.box > h4,
+.ck-content section.special.box > h4 {
   margin-top: 10px;
   padding-bottom: var(--ck-spacing-large);
   border-bottom: solid 3px #008a00;
