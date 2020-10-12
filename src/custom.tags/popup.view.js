@@ -3,7 +3,8 @@ import LabelView from '@ckeditor/ckeditor5-ui/src/label/labelview';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
 
-import icon from '../assets/icons/tools.svg';
+import updateIcon from '../assets/icons/tools.svg';
+import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
 
 export default class ViewPopup extends View {
 
@@ -12,14 +13,24 @@ export default class ViewPopup extends View {
 		this.keystrokes = new KeystrokeHandler();
 
 		this.tagLabelView = new LabelView(locale);
-		this.editButtonView = new ButtonView(this.locale);
-		this.editButtonView.set({
-			label: 'Update tag attributes',
-			icon: icon,
+		
+		const editButtonView = new ButtonView(locale);
+		editButtonView.set({
+			label: locale.t('Update tag attributes'),
+			icon: updateIcon,
 			withText: true,
 			tooltip: false
 		});
-		this.editButtonView.delegate('execute').to(this, 'edit');
+		editButtonView.delegate('execute').to(this, 'edit');
+		
+		const cancelButtonView = new ButtonView(locale);
+		cancelButtonView.set({
+			label: locale.t('Cancel'),
+			icon: cancelIcon,
+			withText: false,
+			tooltip: true
+		});
+		cancelButtonView.delegate('execute').to(this, 'cancel');
 
 		this.setTemplate({
 			tag: 'div',
@@ -42,7 +53,8 @@ export default class ViewPopup extends View {
 						class: ['ck ck-form__row']
 					},
 					children: [
-						this.editButtonView
+						editButtonView,
+						cancelButtonView
 					]
 				}
 			]

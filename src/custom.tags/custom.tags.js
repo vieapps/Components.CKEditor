@@ -46,6 +46,15 @@ class CustomTagsEditing extends Plugin {
 			editor.commands.add('create-custom-tags-' + customTag.tag, new CreateCustomTagsCommand(editor, customTag.tag, this._get(customTag.placeholder, customTag.tag), this._get(customTag.attributes, {})));
 		});
 		editor.commands.add('update-custom-tags', new UpdateCustomTagsCommand(editor));
+		(config.included || []).forEach(tag => {
+			try {
+				this._defineSchema(tag);
+				this._defineConversions(tag);
+			}
+			catch (error) {
+				console.error('Cannot define schema and conversions of a tag', tag, error);
+			}
+		});
 	}
 
 	_get(input, defaultValue) {
@@ -185,33 +194,56 @@ class CustomTagsUI extends Plugin {
 		this._enableUserBalloonInteractions();
 	}
 
+	_getBalloonPositionData() {
+		const view = this.editor.editing.view;
+		const element = this._getSelectedElement();
+		const target = element
+			? view.domConverter.mapViewToDom(element)
+			: view.domConverter.viewRangeToDom(view.document.selection.getFirstRange());
+		return { target };
+	}
+
+	_enableUserBalloonInteractions() {
+		const editor = this.editor;
+		this.listenTo(editor.editing.view.document, 'click', () => this._showUI(this._getSelectedElement()));
+		editor.keystrokes.set('Esc', (data, cancel) => {
+			if (this._balloon.hasView(this._viewPopup) || (this._editPopup !== undefined && this._balloon.hasView(this._editPopup))) {
+				this._cancelPopupOnEscKey(cancel);
+			}
+		});
+
+		clickOutsideHandler({
+			emitter: this._viewPopup,
+			activator: () => this._balloon.visibleView === this._viewPopup || (this._editPopup !== undefined && this._balloon.visibleView == this._editPopup),
+			contextElements: [this._balloon.view.element],
+			callback: () => this._hideUI()
+		});
+	}
+
+	_cancelPopupOnEscKey(cancel) {
+		this._hideUI();
+		cancel();
+	}
+
 	_createViewPopup() {
 		if (this._viewPopup === undefined) {
 			this._viewPopup = new ViewPopup(this.editor.locale)
 			this._viewPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
-			this.listenTo(this._viewPopup, 'edit', () => {
-				this._balloon.remove(this._viewPopup);
-				const element = this._getSelectedElement();
-				this._createEditPopup(this._getAttributes(element), true);
-				this._balloon.add({
-					view: this._editPopup,
-					position: this._getBalloonPositionData()
-				});
-				this._editPopup.tagLabelView.set('text', element.name);
-			});
+			this.listenTo(this._viewPopup, 'edit', () => this._openEditPopup());
+			this.listenTo(this._viewPopup, 'cancel', () => this._hideUI());
 		}
 		return this._viewPopup;
 	}
 
-	_createEditPopup(attributes, force) {
+	_createEditPopup(element, force) {
 		if (!!force) {
 			this._editPopup = undefined;
 		}
 		if (this._editPopup === undefined) {
-			this._editPopup = new EditPopup(this.editor.locale, attributes);
+			element = element || this._getSelectedElement();
+			this._editPopup = new EditPopup(this.editor.locale, this._getAttributes(element));
 			this._editPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
 			this.listenTo(this._editPopup, 'submit', () => {
-				const element = this._getSelectedElement();
 				this.editor.execute('update-custom-tags', element, this._getAttributes(element, true), this._editPopup.attributes);
 				this._hideUI();
 			});
@@ -220,13 +252,24 @@ class CustomTagsUI extends Plugin {
 		return this._editPopup;
 	}
 
-	_cancelPopupOnEscKey(cancel) {
-		this._hideUI();
-		cancel();
+	_openEditPopup(element) {
+		if (this._balloon.hasView(this._viewPopup)) {
+			this._balloon.remove(this._viewPopup);
+		}
+		element = element || this._getSelectedElement();
+		this._createEditPopup(element, true);
+		this._balloon.add({
+			view: this._editPopup,
+			position: this._getBalloonPositionData()
+		});
+		this._editPopup.tagLabelView.set('text', element.name);
 	}
 
 	_getAttributes(element, getAll) {
 		const tagAttributes = new Map();
+		if (!element) {
+			return tagAttributes;
+		}
 		const classes = Array.from((element._classes || new Set()).values());
 		if (classes.length > 0) {
 			tagAttributes.set('class', classes.join(' '));
@@ -271,7 +314,7 @@ class CustomTagsUI extends Plugin {
 
 	_getSelectedElement() {
 		const selection = this.editor.editing.view.document.selection;
-		let element = selection.getSelectedElement() || selection.getFirstPosition().parent;
+		let element = selection.getSelectedElement() || (selection.getFirstPosition() || {}).parent;
 		while (!!element) {
 			if (element.name && this.knownTags.has(element.name)) {
 				break;
@@ -285,32 +328,6 @@ class CustomTagsUI extends Plugin {
 		return element && element.is('containerElement') && element.name && this.knownTags.has(element.name) && !!element.getCustomProperty('isCustomTag')
 			? element
 			: undefined;
-	}
-
-	_getBalloonPositionData() {
-		const view = this.editor.editing.view;
-		const element = this._getSelectedElement();
-		const target = element
-			? view.domConverter.mapViewToDom(element)
-			: view.domConverter.viewRangeToDom(view.document.selection.getFirstRange());
-		return { target };
-	}
-
-	_enableUserBalloonInteractions() {
-		const editor = this.editor;
-		this.listenTo(editor.editing.view.document, 'click', () => this._showUI(this._getSelectedElement()));
-		editor.keystrokes.set('Esc', (data, cancel) => {
-			if (this._balloon.hasView(this._viewPopup) || (this._editPopup !== undefined && this._balloon.hasView(this._editPopup))) {
-				this._cancelPopupOnEscKey(cancel);
-			}
-		});
-
-		clickOutsideHandler({
-			emitter: this._viewPopup,
-			activator: () => this._balloon.visibleView === this._viewPopup || (this._editPopup !== undefined && this._balloon.visibleView == this._editPopup),
-			contextElements: [this._balloon.view.element],
-			callback: () => this._hideUI()
-		});
 	}
 
 	_showUI(element) {
