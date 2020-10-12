@@ -34,11 +34,11 @@ export default class MediaSelector extends Plugin {
 					console.warn('The configuration of the media selector button is undefined or invalid (no "selectMedia" function)', config);
 				}
 				else {
-					config.selectMedia((link, type) => {
+					config.selectMedia((link, type, href) => {
 						if (link && link !== '') {
 							editor.model.change(writer => {
 								if (type === undefined || type === null || type === 'image') {
-									editor.model.insertContent(writer.createElement('image', { src: link }));
+									editor.model.insertContent(writer.createElement('image', { src: link, linkHref: href || link }));
 								}
 								else {
 									try {
