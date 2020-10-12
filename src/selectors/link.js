@@ -17,54 +17,58 @@ export default class LinkSelector extends Plugin {
 	}
 
 	init() {
-		// get the configuration and create buttons
-		const config = this.editor.config.get('link.selector');
-		this.contentButton = this._createButton(config !== undefined ? config.content : undefined, 'Internal content', contentIcon);
-		this.fileButton = this._createButton(config !== undefined ? config.file : undefined, 'Uploaded file', fileIcon);
+		// get the configuration
+		const editor = this.editor;
+		const config = editor.config.get('link.selector');
+
+		// get the LinkUI plugin
+		this.linkUI = editor.plugins.get(LinkUI);
+
+		// create buttons
+		const contentButton = this._createButton(config !== undefined ? config.content : undefined, 'Internal content', contentIcon);
+		const fileButton = this._createButton(config !== undefined ? config.file : undefined, 'Uploaded file', fileIcon);
 
 		// render the buttons
-		this.linkUI = this.editor.plugins.get(LinkUI);
-		this.linkFormView = this.linkUI.formView;
-
-		this.linkFormView.once('render', () => {
-			const saveButtonElement = this.linkFormView.saveButtonView.element;
+		const linkFormView = this.linkUI.formView;
+		linkFormView.once('render', () => {
+			const saveButtonViewElement = linkFormView.saveButtonView.element;
 
 			// add the button to select link of internal content
-			if (this.contentButton !== undefined) {
+			if (contentButton !== undefined) {
 				// render the button's template
-				this.contentButton.render();
+				contentButton.render();
 
 				// register the button under the link form view, it will handle its destruction
-				this.linkFormView.registerChild(this.contentButton);
+				linkFormView.registerChild(contentButton);
 
 				// inject the element into DOM.
-				this.linkFormView.element.insertBefore(this.contentButton.element, saveButtonElement);
+				linkFormView.element.insertBefore(contentButton.element, saveButtonViewElement);
 			}
 
 			// add the button to select link of uploaded file
-			if (this.fileButton !== undefined) {
-				this.fileButton.render();
-				this.linkFormView.registerChild(this.fileButton);
-				this.linkFormView.element.insertBefore(this.fileButton.element, saveButtonElement);
+			if (fileButton !== undefined) {
+				fileButton.render();
+				linkFormView.registerChild(fileButton);
+				linkFormView.element.insertBefore(fileButton.element, saveButtonViewElement);
 			}
 
 			// update buttons' width when got decorators
-			this.buttonsWidth = this.editor.config.get('link.decorators') === undefined
+			const buttonsWidth = editor.config.get('link.decorators') === undefined
 				? undefined
-				: this.contentButton !== undefined && this.fileButton !== undefined
+				: contentButton !== undefined && fileButton !== undefined
 					? '25%'
-					: this.contentButton !== undefined || this.fileButton !== undefined
+					: contentButton !== undefined || fileButton !== undefined
 						? '33.3%'
 						: undefined;
 
-			if (this.buttonsWidth !== undefined) {
-				if (this.contentButton !== undefined) {
-					this.contentButton.element.style.width = this.buttonsWidth;
+			if (buttonsWidth !== undefined) {
+				if (contentButton !== undefined) {
+					contentButton.element.style.width = buttonsWidth;
 				}
-				if (this.fileButton !== undefined) {
-					this.fileButton.element.style.width = this.buttonsWidth;
+				if (fileButton !== undefined) {
+					fileButton.element.style.width = buttonsWidth;
 				}
-				saveButtonElement.style.width = this.linkFormView.cancelButtonView.element.style.width = this.buttonsWidth;
+				saveButtonViewElement.style.width = linkFormView.cancelButtonView.element.style.width = buttonsWidth;
 			}
 		});
 	}
