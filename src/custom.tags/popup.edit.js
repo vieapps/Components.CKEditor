@@ -20,7 +20,7 @@ import objectRightIcon from '@ckeditor/ckeditor5-core/theme/icons/object-right.s
 
 export default class EditPopup extends View {
 
-	constructor(locale, attributes) {
+	constructor(locale, tag, attributes) {
 		super(locale);
 
 		this.keystrokes = new KeystrokeHandler();
@@ -43,12 +43,14 @@ export default class EditPopup extends View {
 		this._height = this._styles.get('height') || '';
 		this._alignment = this._styles.get('float') || 'center';
 
-		this.tagLabelView = new LabelView(locale);
+		const tagLabelView = new LabelView(locale);
+		tagLabelView.set('text', tag);
 
 		const dimensionsLabelView = new LabelView(locale);
 		dimensionsLabelView.text = locale.t('Dimensions');
 		
 		const widthInputView = new InputTextView(locale);
+		widthInputView.set('isReadOnly', tag != 'div' && tag != 'section');
 		widthInputView.bind('value').to(this, '_width');
 		widthInputView.on('input', () => {
 			this._width = widthInputView.element.value || '';
@@ -67,6 +69,7 @@ export default class EditPopup extends View {
 		});
 
 		const heightInputView = new InputTextView(locale);
+		heightInputView.set('isReadOnly', tag != 'div' && tag != 'section');
 		heightInputView.bind('value').to(this, '_height');
 		heightInputView.on('input', () => {
 			this._height = heightInputView.element.value || '';
@@ -90,6 +93,7 @@ export default class EditPopup extends View {
 			label: locale.t('Left alignment'),
 			tooltip: locale.t('Left alignment'),
 			icon: objectLeftIcon,
+			isEnabled: tag == 'div' || tag == 'section',
 			isOn: this._alignment == 'left'
 		});
 		this.leftAlignButtonView.on('execute', () => {
@@ -104,6 +108,7 @@ export default class EditPopup extends View {
 			label: locale.t('Center alignment'),
 			tooltip: locale.t('Center alignment'),
 			icon: objectCenterIcon,
+			isEnabled: tag == 'div' || tag == 'section',
 			isOn: this._alignment == 'center'
 		});
 		this.centerAlignButtonView.on('execute', () => {
@@ -118,6 +123,7 @@ export default class EditPopup extends View {
 			label: locale.t('Right alignment'),
 			tooltip: locale.t('Right alignment'),
 			icon: objectRightIcon,
+			isEnabled: tag == 'div' || tag == 'section',
 			isOn: this._alignment == 'right'
 		});
 		this.rightAlignButtonView.on('execute', () => {
@@ -175,7 +181,7 @@ export default class EditPopup extends View {
 						class: ['ck ck-form__header']
 					},
 					children: [
-						this.tagLabelView
+						tagLabelView
 					]
 				},
 				{
