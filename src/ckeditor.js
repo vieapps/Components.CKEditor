@@ -236,21 +236,21 @@ Editor.defaultConfig = {
 				tag: 'div',
 				placeholder: 'DIV content goes here',
 				attributes: {
-					'class': 'special block'
+					class: 'special block'
 				}
 			},
 			{
 				tag: 'section',
 				placeholder: 'SECTION content goes here',
 				attributes: {
-					'class': 'special block'
+					class: 'special block'
 				}
 			},
 			{
 				tag: 'span',
 				placeholder: 'Text content goes here',
 				attributes: {
-					'class': 'special text'
+					class: 'special text'
 				}
 			}
 		],

@@ -24,12 +24,14 @@
 .ck-content div.special.box.left,
 .ck-content section.special.box.left {
 	float: left;
-	clear: none;
+  clear: none;
+  margin-left: 0;
 }
 .ck-content div.special.box.right,
 .ck-content section.special.box.right {
 	float: right;
-	clear: none;
+  clear: none;
+  margin-right: 0;
 }
 .ck-content div.special.box > h2,
 .ck-content section.special.box > h2,

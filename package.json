@@ -1,6 +1,6 @@
 {
   "name": "ckeditor5-build-decouple-extended",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A CKEditor 5 custom build, based on 'DecoupledEditor' build of with some other plugins and no dependencies on CKFinder.",
   "keywords": [
     "ckeditor5-build",

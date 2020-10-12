@@ -180,13 +180,13 @@ class CustomTagsUI extends Plugin {
 				const command = editor.commands.get('create-custom-tags-div');
 				const button = new ButtonView(locale);
 				button.set({
-					label: 'Box',
+					label: locale.t('Box'),
 					withText: false,
 					tooltip: true,
 					icon: boxIcon
 				});
 				button.bind('isEnabled', 'isOn').to(command, 'isEnabled', 'value');
-				this.listenTo(button, 'execute', () => editor.execute('create-custom-tags-div', { class: 'special box', style: 'width:300px;float:right;' }, 'Box Content', 'Box Title'));
+				this.listenTo(button, 'execute', () => editor.execute('create-custom-tags-div', { class: 'special box right', style: 'width:300px;' }, 'Box Content', 'Box Title'));
 				return button;
 			});
 		}
