@@ -45,7 +45,7 @@ class CustomTagsEditing extends Plugin {
 			this._defineConversions(customTag.tag);
 			editor.commands.add('create-custom-tags-' + customTag.tag, new CreateCustomTagsCommand(editor, customTag.tag, this._get(customTag.placeholder, customTag.tag), this._get(customTag.attributes, {})));
 		});
-		editor.commands.add('update-custom-tags', new UpdateCustomTagsCommand(editor));
+
 		(config.included || []).forEach(tag => {
 			try {
 				this._defineSchema(tag);
@@ -55,6 +55,9 @@ class CustomTagsEditing extends Plugin {
 				console.error('Cannot define schema and conversions of a tag', tag, error);
 			}
 		});
+
+		editor.commands.add('update-custom-tags', new UpdateCustomTagsCommand(editor));
+		editor.commands.add('select-custom-tags', new SelectCustomTagsCommand(editor));
 	}
 
 	_get(input, defaultValue) {
@@ -220,19 +223,37 @@ class CustomTagsUI extends Plugin {
 	}
 
 	_createViewPopup() {
-		if (this._viewPopup === undefined) {
-			this._viewPopup = new ViewPopup(this.editor.locale)
-			this._viewPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
-			this.listenTo(this._viewPopup, 'edit', () => {
-				this._balloon.remove(this._viewPopup);
-				this._balloon.add({
-					view: this._createEditPopup(),
-					position: this._getBalloonPositionData()
-				});
+		const editor = this.editor;
+		this._viewPopup = new ViewPopup(editor.locale)
+		this._viewPopup.keystrokes.set('Esc', (data, cancel) => this._cancelPopupOnEscKey(cancel));
+		this.listenTo(this._viewPopup, 'edit', () => {
+			this._balloon.remove(this._viewPopup);
+			this._balloon.add({
+				view: this._createEditPopup(),
+				position: this._getBalloonPositionData()
 			});
-			this.listenTo(this._viewPopup, 'cancel', () => this._hideUI());
-		}
-		return this._viewPopup;
+		});
+		this.listenTo(this._viewPopup, 'createParagraphBefore', () => {
+			const viewElement = this._getSelectedElement();
+			const modelElement = viewElement ? editor.editing.mapper.toModelElement(viewElement) : undefined;
+			if (modelElement) {
+				editor.execute('insertParagraph', { position: editor.model.createPositionBefore(modelElement) });
+				this._hideUI();
+			}
+		});
+		this.listenTo(this._viewPopup, 'createParagraphAfter', () => {
+			const viewElement = this._getSelectedElement();
+			const modelElement = viewElement ? editor.editing.mapper.toModelElement(viewElement) : undefined;
+			if (modelElement) {
+				editor.execute('insertParagraph', { position: editor.model.createPositionAfter(modelElement) });
+				this._hideUI();
+			}
+		});
+		this.listenTo(this._viewPopup, 'select', () => {
+			this.editor.execute('select-custom-tags', this._getSelectedElement());
+			this._hideUI();
+		});
+		this.listenTo(this._viewPopup, 'cancel', () => this._hideUI());
 	}
 
 	_createEditPopup() {
@@ -358,6 +379,7 @@ class CreateCustomTagsCommand extends Command {
 					const heading = writer.createElement('heading1');
 					writer.appendText(title, heading);
 					writer.append(heading, element);
+					writer.setSelection(heading, 'on');
 				}
 				const paragraph = writer.createElement('paragraph');
 				writer.appendText(content || this.placeholder, paragraph);
@@ -379,7 +401,7 @@ class UpdateCustomTagsCommand extends Command {
 	
 	execute(viewElement, currentAttributes, updatedAttributes) {
 		const editor = this.editor;
-		const modelElement = editor.editing.mapper.toModelElement(viewElement);
+		const modelElement = viewElement ? editor.editing.mapper.toModelElement(viewElement) : undefined;
 		if (viewElement && modelElement) {
 			editor.model.change(writer => {
 				Array.from(currentAttributes.keys()).forEach(name => {
@@ -389,6 +411,22 @@ class UpdateCustomTagsCommand extends Command {
 				});
 				updatedAttributes.forEach((value, name) => writer.setAttribute(name, value, modelElement));
 			});
+		}
+	};
+
+	refresh() {
+		this.isEnabled = true;
+	}
+	
+}
+
+class SelectCustomTagsCommand extends Command {
+	
+	execute(viewElement) {
+		const editor = this.editor;
+		const modelElement = viewElement ? editor.editing.mapper.toModelElement(viewElement) : undefined;
+		if (viewElement && modelElement) {
+			editor.model.change(writer => writer.setSelection(modelElement, 'on'));
 		}
 	};
 

@@ -16,22 +16,25 @@
 .ck-content div.special.box,
 .ck-content section.special.box {
   border: solid 2px #eee;
-  border-radius: 10px;
+  border-radius: 7px;
   padding: var(--ck-spacing-large);
-  margin: var(--ck-spacing-large);
   max-width: 100%;
 }
 .ck-content div.special.box.left,
-.ck-content section.special.box.left {
+.ck-content section.special.box.left,
+.ck-content div.special.block.left,
+.ck-content section.special.block.left {
 	float: left;
   clear: none;
-  margin-left: 0;
+  padding-left: 0;
 }
 .ck-content div.special.box.right,
-.ck-content section.special.box.right {
+.ck-content section.special.box.right,
+.ck-content div.special.block.right,
+.ck-content section.special.block.right {
 	float: right;
   clear: none;
-  margin-right: 0;
+  padding-right: 0;
 }
 .ck-content div.special.box > h2,
 .ck-content section.special.box > h2,
