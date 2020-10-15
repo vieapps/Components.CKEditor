@@ -4,6 +4,9 @@
 .ck-toolbar .ck-toolbar__items button.ck-custom-tags-section {
   color: #db3700;
 }
+.ck-content .image img {
+  min-width: unset !important;
+}
 .ck-content div {
   border: dashed .5px #008a00;
 }
@@ -26,7 +29,6 @@
 .ck-content section.special.block.left {
 	float: left;
   clear: none;
-  padding-left: 0;
 }
 .ck-content div.special.box.right,
 .ck-content section.special.box.right,
@@ -34,7 +36,6 @@
 .ck-content section.special.block.right {
 	float: right;
   clear: none;
-  padding-right: 0;
 }
 .ck-content div.special.box > h2,
 .ck-content section.special.box > h2,
