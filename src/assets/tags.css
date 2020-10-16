@@ -4,6 +4,11 @@
 .ck-toolbar .ck-toolbar__items button.ck-custom-tags-section {
   color: #db3700;
 }
+.ck-toolbar .ck-input-text.ck-custom-color {
+  width: 116px;
+  min-width: unset;
+  margin: 2px;
+}
 .ck-content .image img {
   min-width: unset !important;
 }

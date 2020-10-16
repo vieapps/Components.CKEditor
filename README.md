@@ -8,6 +8,11 @@ This repository presents a CKEditor5 build with integration of some useful custo
 * Special tags with all standard/custom attributes are allowed (custom tags are included), pre-defined: DIV, SECTION and SPAN
 * InfoBox (as a special DIV tag)
 
+**Hacked Plugins:**
+* Font Color
+* Font Background Color
+with custom color code
+
 ## Quick start
 
 Open the `sample/index.html` page in the browser.
