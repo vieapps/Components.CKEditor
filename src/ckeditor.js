@@ -13,8 +13,6 @@ import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
 import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
 // import FontBackgroundColor from '@ckeditor/ckeditor5-font/src/fontbackgroundcolor';
 // import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
-import FontBackgroundColor from './colors/color.background';
-import FontColor from './colors/color.foreground';
 import FontFamily from '@ckeditor/ckeditor5-font/src/fontfamily';
 import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
 import Heading from '@ckeditor/ckeditor5-heading/src/heading';
@@ -51,10 +49,12 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 
-import LinkSelector from './selectors/link';
-import MediaSelector from './selectors/media';
 import Bookmark from './bookmark/bookmark';
 import CustomTags from './custom.tags/custom.tags';
+import FontBackgroundColor from './colors/color.background';
+import FontColor from './colors/color.foreground';
+import LinkSelector from './selectors/link';
+import MediaSelector from './selectors/media';
 
 export default class Editor extends DecoupledDocumentEditor {}
 
@@ -222,12 +222,20 @@ Editor.defaultConfig = {
 					target: '_blank'
 				}
 			},
-			relNoOpenerNoReferrer: {
+			addRelNoOpenerNoReferrer: {
 				mode: 'manual',
 				label: 'noopener/noreferrer',
 				defaultValue: false,
 				attributes: {
 					rel: 'noopener noreferrer'
+				}
+			},
+			addInlinePopupCssClass: {
+				mode: 'manual',
+				label: 'inline popup',
+				defaultValue: false,
+				attributes: {
+					class: 'inline popup'
 				}
 			}
 		}
