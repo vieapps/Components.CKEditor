@@ -1,6 +1,6 @@
 {
   "name": "ckeditor5-build-decouple-extended",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A CKEditor 5 custom build, based on 'DecoupledEditor' build of with some other plugins and no dependencies on CKFinder.",
   "keywords": [
     "ckeditor5-build",
@@ -33,8 +33,8 @@
     "@ckeditor/ckeditor5-basic-styles": "^25.0.0",
     "@ckeditor/ckeditor5-block-quote": "^25.0.0",
     "@ckeditor/ckeditor5-code-block": "^25.0.0",
-    "@ckeditor/ckeditor5-dev-utils": "^24.1.0",
-    "@ckeditor/ckeditor5-dev-webpack-plugin": "^24.1.0",
+    "@ckeditor/ckeditor5-dev-utils": "^24.2.0",
+    "@ckeditor/ckeditor5-dev-webpack-plugin": "^24.2.0",
     "@ckeditor/ckeditor5-editor-decoupled": "^25.0.0",
     "@ckeditor/ckeditor5-essentials": "^25.0.0",
     "@ckeditor/ckeditor5-font": "^25.0.0",
@@ -54,7 +54,7 @@
     "@ckeditor/ckeditor5-theme-lark": "^25.0.0",
     "@ckeditor/ckeditor5-typing": "^25.0.0",
     "@ckeditor/ckeditor5-upload": "^25.0.0",
-    "eslint": "^7.19.0",
+    "eslint": "^7.20.0",
     "eslint-config-ckeditor5": "^3.1.0",
     "lint-staged": "^10.5.4",
     "postcss-loader": "3.0.0",

@@ -18,11 +18,10 @@ export default class LinkSelector extends Plugin {
 
 	init() {
 		// get the configuration
-		const editor = this.editor;
-		const config = editor.config.get('link.selector');
+		const config = this.editor.config.get('link.selector');
 
 		// get the LinkUI plugin
-		this.linkUI = editor.plugins.get(LinkUI);
+		this.linkUI = this.editor.plugins.get(LinkUI);
 
 		// create buttons
 		const contentButton = this._createButton(config !== undefined ? config.content : undefined, 'Internal content', contentIcon);
@@ -53,7 +52,7 @@ export default class LinkSelector extends Plugin {
 			}
 
 			// update buttons' width when got decorators
-			const buttonsWidth = editor.config.get('link.decorators') === undefined
+			const buttonsWidth = this.editor.config.get('link.decorators') === undefined
 				? undefined
 				: contentButton !== undefined && fileButton !== undefined
 					? '25%'
@@ -98,7 +97,10 @@ export default class LinkSelector extends Plugin {
 			this.linkUI._hideUI();
 			config.selectLink(link => {
 				if (link && link !== '') {
-					command.execute(link, { linkIsExternal: true });
+					const options = link.endsWith('.png') || link.endsWith('.jpg') || link.endsWith('.jpeg') || link.endsWith('.webp')
+						? { linkAddInlinePopupCssClass: true }
+						: { linkOpenInNewTab: true };
+					command.execute(link, options);
 				}
 			});
 		});

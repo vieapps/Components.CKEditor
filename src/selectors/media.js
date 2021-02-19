@@ -10,12 +10,9 @@ export default class MediaSelector extends Plugin {
 	}
 
 	init() {
-		// get editor
-		const editor = this.editor;
-
 		// setup `mediaSelector` button
-		const config = editor.config.get('media.selector');
-		editor.ui.componentFactory.add('mediaSelector', locale => {
+		const config = this.editor.config.get('media.selector');
+		this.editor.ui.componentFactory.add('mediaSelector', locale => {
 			// create button
 			const button = new ButtonView(locale);
 			button.set({
@@ -36,9 +33,9 @@ export default class MediaSelector extends Plugin {
 				else {
 					config.selectMedia((link, type, href) => {
 						if (link && link !== '') {
-							editor.model.change(writer => {
+							this.editor.model.change(writer => {
 								if (type === undefined || type === null || type === 'image') {
-									editor.model.insertContent(writer.createElement('image', { src: link, linkHref: href || link }));
+									this.editor.model.insertContent(writer.createElement('image', { src: link, linkHref: href || link, linkAddInlinePopupCssClass: true }));
 								}
 								else {
 									try {
