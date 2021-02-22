@@ -9,7 +9,7 @@ import { toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
 
 import ViewPopup from './popup.view';
 import EditPopup from './popup.edit';
-import tagsCss from '../assets/tags.css';
+import tagsCss from '../assets/custom.tags.css';
 import tagsIcon from '../assets/icons/tag.svg';
 import boxIcon from '../assets/icons/box.svg';
 

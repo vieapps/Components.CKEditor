@@ -1,0 +1,6 @@
+.ck-link-form.ck-vertical-form button.ck-button {
+  margin-top: var(--ck-spacing-medium);
+}
+.ck-vertical-form > .ck-button:after {
+  border-right: none;
+}

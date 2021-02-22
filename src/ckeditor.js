@@ -49,8 +49,9 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 
-import Bookmark from './bookmark/bookmark';
+import RemoveTags from './remove.tags/remove.tags';
 import CustomTags from './custom.tags/custom.tags';
+import Bookmark from './bookmark/bookmark';
 import FontBackgroundColor from './colors/color.background';
 import FontColor from './colors/color.foreground';
 import LinkSelector from './selectors/link';
@@ -108,7 +109,8 @@ Editor.builtinPlugins = [
 	LinkSelector,
 	MediaSelector,
 	Bookmark,
-	CustomTags
+	CustomTags,
+	RemoveTags
 ];
 
 // default configuration
@@ -146,6 +148,7 @@ Editor.defaultConfig = {
 			'mediaSelector',
 			'|',
 			'removeFormat',
+			'removeTags',
 			'selectAll',
 			'bookmark',
 			'custom-tags-div',
