@@ -5,7 +5,7 @@ This repository presents a CKEditor5 build with integration of some useful custo
 **Custom Plugins:**
 * Link/Media Selectors
 * Bookmark (ckeditor5-bookmark, of RasmusRummel - https://github.com/RasmusRummel/ckeditor5-bookmark)
-* Special tags with all standard/custom attributes are allowed (custom tags are included), pre-defined: DIV, SECTION and SPAN
+* Special tags with all standard/custom attributes are allowed (custom tags are included), pre-defined: DIV, SECTION and LABEL
 * InfoBox (as a special DIV tag)
 
 **Hacked Plugins:**

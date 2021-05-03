@@ -153,7 +153,7 @@ Editor.defaultConfig = {
 			'bookmark',
 			'custom-tags-div',
 			'custom-tags-section',
-			'custom-tags-span',
+			'custom-tags-label',
 			'box',
 			'highlight',
 			'horizontalLine',
@@ -260,7 +260,7 @@ Editor.defaultConfig = {
 				}
 			},
 			{
-				tag: 'span',
+				tag: 'label',
 				placeholder: 'Text content goes here',
 				attributes: {
 					class: 'special text'
