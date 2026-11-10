@@ -1,7 +1,3 @@
-/**
- * @license Copyright (c) 2014-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
- */
 import DecoupledDocumentEditor from '@ckeditor/ckeditor5-editor-decoupled/src/decouplededitor';
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
 import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
@@ -176,6 +172,11 @@ Editor.defaultConfig = {
 				name: 'imageResize:original',
 				label: 'Original',
 				value: null
+			},
+			{
+				name: 'imageResize:90',
+				label: '90%',
+				value: '90'
 			},
 			{
 				name: 'imageResize:75',
