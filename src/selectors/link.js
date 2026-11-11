@@ -1,111 +1,82 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import LinkUI from '@ckeditor/ckeditor5-link/src/linkui';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import contentIcon from '../assets/icons/content.svg';
-import fileIcon from '../assets/icons/file.svg';
+import { Plugin, LinkUI, ButtonView, FormRowView, ContextualBalloon, ModelLiveRange, IconCancel } from 'ckeditor5';
+import contentIcon from '../cke/icons/content.svg?raw';
+import fileIcon from '../cke/icons/file.svg?raw';
 
-/** Allow to select a link from existing content or uploaded file */
+/** CMS selectors belong to the link form, not the editor toolbar. */
 export default class LinkSelector extends Plugin {
-
-	constructor(editor) {
-		super(editor);
-		editor.config.define('link.selector', ['content', 'file']);
-	}
-
-	static get pluginName() {
-		return 'LinkSelector';
-	}
+	static get pluginName() { return 'LinkSelector'; }
+	static get requires() { return [LinkUI, ContextualBalloon]; }
 
 	init() {
-		// get the configuration
-		const config = this.editor.config.get('link.selector');
-
-		// get the LinkUI plugin
 		this.linkUI = this.editor.plugins.get(LinkUI);
-
-		// create buttons
-		const contentButton = this._createButton(config !== undefined ? config.content : undefined, 'Internal content', contentIcon);
-		const fileButton = this._createButton(config !== undefined ? config.file : undefined, 'Uploaded file', fileIcon);
-
-		// render the buttons
-		const linkFormView = this.linkUI.formView;
-		linkFormView.once('render', () => {
-			const saveButtonViewElement = linkFormView.saveButtonView.element;
-
-			// add the button to select link of internal content
-			if (contentButton !== undefined) {
-				// render the button's template
-				contentButton.render();
-
-				// register the button under the link form view, it will handle its destruction
-				linkFormView.registerChild(contentButton);
-
-				// inject the element into DOM.
-				linkFormView.element.insertBefore(contentButton.element, saveButtonViewElement);
-			}
-
-			// add the button to select link of uploaded file
-			if (fileButton !== undefined) {
-				fileButton.render();
-				linkFormView.registerChild(fileButton);
-				linkFormView.element.insertBefore(fileButton.element, saveButtonViewElement);
-			}
-
-			// update buttons' width when got decorators
-			const buttonsWidth = this.editor.config.get('link.decorators') === undefined
-				? undefined
-				: contentButton !== undefined && fileButton !== undefined
-					? '25%'
-					: contentButton !== undefined || fileButton !== undefined
-						? '33.3%'
-						: undefined;
-
-			if (buttonsWidth !== undefined) {
-				if (contentButton !== undefined) {
-					contentButton.element.style.width = buttonsWidth;
-				}
-				if (fileButton !== undefined) {
-					fileButton.element.style.width = buttonsWidth;
-				}
-				saveButtonViewElement.style.width = linkFormView.cancelButtonView.element.style.width = buttonsWidth;
-			}
+		this.balloon = this.editor.plugins.get(ContextualBalloon);
+		this.pending = new Set();
+		// LinkUI creates its public formView lazily. Observe its first presentation.
+		this.listenTo(this.balloon, 'change:visibleView', () => {
+			const form = this.linkUI.formView;
+			if (form && this.balloon.visibleView === form && !this.formInstalled) this.installForm(form);
 		});
 	}
 
-	_createButton(config, label, icon) {
-		// check the configuration
-		if (config === undefined || config === null || typeof config.selectLink !== 'function') {
-			console.warn('The configuration of a link button is undefined or invalid (no "selectLink" function)', config);
-			return undefined;
-		}
+	installForm(form) {
+		const config = this.editor.config.get('link.selector') || {};
+		const buttons = [this.createButton(config.content, 'Internal content', contentIcon), this.createButton(config.file, 'Uploaded file', fileIcon)].filter(Boolean);
+		this.formInstalled = true;
+		if (!buttons.length) return;
+		const submitRow = [...form.children].find(row => row.children?.has(form.saveButtonView));
+		if (submitRow) submitRow.children.remove(form.saveButtonView);
+		const cancel = new ButtonView(this.editor.locale);
+		cancel.set({ label: this.editor.t('Cancel'), icon: IconCancel, tooltip: true });
+		this.listenTo(cancel, 'execute', () => form.fire('cancel'));
+		form.children.add(new FormRowView(this.editor.locale, { children: [...buttons, form.saveButtonView, cancel], class: ['ck-vieapps-link-selectors'] }));
+		for (const button of [...buttons, cancel]) form.focusTracker.add(button.element);
+		// Public keystrokes API includes the newly added controls in form Tab navigation.
+		for (const key of ['Tab', 'Shift+Tab']) form.keystrokes.set(key, (data, cancel) => {
+			const controls = [...form.element.querySelectorAll('input:not([disabled]),button:not([disabled])')].filter(node => node.getClientRects().length);
+			const current = controls.indexOf(form.element.ownerDocument.activeElement);
+			if (controls.length) controls[(current + (key === 'Tab' ? 1 : -1) + controls.length) % controls.length].focus();
+			cancel();
+		}, { priority: 'high' });
+	}
 
-		// create the button
-		const button = new ButtonView(this.locale);
-		button.set({
-			label: config.label || label,
-			icon: icon,
-			withText: false,
-			tooltip: true
-		});
-
-		// probably this button should be also disabled when the link command is disabled, so try setting editor.isReadOnly = true to see it in action
-		const command = this.editor.commands.get('link');
-		button.bind('isEnabled').to(command);
-
-		// call the outside handler to select link and update editor's data
-		button.on('execute', () => {
-			this.linkUI._hideUI();
-			config.selectLink(link => {
-				if (link && link !== '') {
-					const options = link.endsWith('.png') || link.endsWith('.jpg') || link.endsWith('.jpeg') || link.endsWith('.webp')
-						? { linkAddInlinePopupCssClass: true }
-						: { linkOpenInNewTab: true };
-					command.execute(link, options);
+	createButton(config, fallbackLabel, icon) {
+		if (typeof config?.selectLink !== 'function') return null;
+		const editor = this.editor;
+		const button = new ButtonView(editor.locale);
+		button.set({ label: config.label || editor.t(fallbackLabel), icon, tooltip: true });
+		button.bind('isEnabled').to(editor.commands.get('link'), 'isEnabled');
+		this.listenTo(button, 'execute', () => {
+			const range = ModelLiveRange.fromRange(editor.model.document.selection.getFirstRange());
+			this.pending.add(range);
+			// Use public view lifecycle events to dismiss the form, preserving LinkUI cleanup.
+			this.linkUI.formView.fire('cancel');
+			let completed = false;
+			const selected = link => {
+				if (completed) return;
+				completed = true;
+				try {
+					if (editor.state === 'destroyed' || editor.state === 'destroying') return;
+					if (link) {
+						editor.model.change(writer => writer.setSelection(range.toRange()));
+						const options = ['.png', '.jpg', '.jpeg', '.webp'].some(suffix => link.endsWith(suffix))
+							? { linkAddInlinePopupCssClass: true } : { linkOpenInNewTab: true };
+						editor.execute('link', link, options);
+					}
+					editor.editing.view.focus();
 				}
-			});
+				finally { range.detach(); this.pending.delete(range); }
+			};
+			try {
+				Promise.resolve(config.selectLink(selected)).catch(error => { selected(); console.error('Link selector failed', error); });
+			}
+			catch (error) { selected(); console.error('Link selector failed', error); }
 		});
-
 		return button;
 	}
 
+	destroy() {
+		for (const range of this.pending) range.detach();
+		this.pending.clear();
+		super.destroy();
+	}
 }

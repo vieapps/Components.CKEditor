@@ -1,10 +1,10 @@
-﻿import View from '@ckeditor/ckeditor5-ui/src/view';
-import LabelView from '@ckeditor/ckeditor5-ui/src/label/labelview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
+import { View } from 'ckeditor5';
+import { LabelView } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { KeystrokeHandler } from 'ckeditor5';
 
-import pencilIcon from '@ckeditor/ckeditor5-core/theme/icons/pencil.svg';
-import unlinkIcon from '@ckeditor/ckeditor5-link/theme/icons/unlink.svg';
+import { IconPencil as pencilIcon } from 'ckeditor5';
+import { IconUnlink as unlinkIcon } from 'ckeditor5';
 
 export default class ViewPopup extends View {
 
@@ -13,8 +13,8 @@ export default class ViewPopup extends View {
 		this.keystrokes = new KeystrokeHandler();
 
 		this.nameLabelView = new LabelView(locale);
-		this.editButtonView = this._createButton(locale.t('Edit link').split(' ')[0], pencilIcon, 'edit');
-		this.deleteButtonView = this._createButton(locale.t('Unlink').split(' ')[0], unlinkIcon, 'delete');
+		this.editButtonView = this._createButton(locale.t('Edit bookmark'), pencilIcon, 'edit');
+		this.deleteButtonView = this._createButton(locale.t('Remove bookmark'), unlinkIcon, 'delete');
 
 		this.setTemplate({
 			tag: 'div',

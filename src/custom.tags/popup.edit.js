@@ -1,22 +1,22 @@
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import LabelView from '@ckeditor/ckeditor5-ui/src/label/labelview';
-import InputTextView from '@ckeditor/ckeditor5-ui/src/inputtext/inputtextview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
-import submitHandler from '@ckeditor/ckeditor5-ui/src/bindings/submithandler';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import FocusCycler from '@ckeditor/ckeditor5-ui/src/focuscycler';
-import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection';
-import Collection from '@ckeditor/ckeditor5-utils/src/collection';
-import Model from '@ckeditor/ckeditor5-ui/src/model';
-import { addListToDropdown, createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
+import { View } from 'ckeditor5';
+import { LabelView } from 'ckeditor5';
+import { InputTextView } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { ToolbarView } from 'ckeditor5';
+import { KeystrokeHandler } from 'ckeditor5';
+import { submitHandler } from 'ckeditor5';
+import { FocusTracker } from 'ckeditor5';
+import { FocusCycler } from 'ckeditor5';
+import { ViewCollection } from 'ckeditor5';
+import { Collection } from 'ckeditor5';
+import { UIModel as Model } from 'ckeditor5';
+import { addListToDropdown, createDropdown } from 'ckeditor5';
 
-import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
-import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
-import objectLeftIcon from '@ckeditor/ckeditor5-core/theme/icons/object-left.svg';
-import objectCenterIcon from '@ckeditor/ckeditor5-core/theme/icons/object-center.svg';
-import objectRightIcon from '@ckeditor/ckeditor5-core/theme/icons/object-right.svg';
+import { IconCheck as checkIcon } from 'ckeditor5';
+import { IconCancel as cancelIcon } from 'ckeditor5';
+import { IconObjectLeft as objectLeftIcon } from 'ckeditor5';
+import { IconObjectCenter as objectCenterIcon } from 'ckeditor5';
+import { IconObjectRight as objectRightIcon } from 'ckeditor5';
 
 export default class EditPopup extends View {
 
@@ -136,7 +136,7 @@ export default class EditPopup extends View {
 		this.attributesDropdownView = createDropdown(locale);
 		addListToDropdown(this.attributesDropdownView, this._getAttributesAsDropdownItems());
 		this.attributesDropdownView.buttonView.set({
-			label: 'Select to create new or update an attribute',
+			label: locale.t('Select to create new or update an attribute'),
 			tooltip: true,
 			withText: true
 		});
@@ -144,12 +144,12 @@ export default class EditPopup extends View {
 
 		this.nameInputView = new InputTextView(locale);
 		this.nameInputView.set({
-			placeholder: 'name'
+			placeholder: locale.t('Attribute name')
 		});
 
 		this.valueInputView = new InputTextView(locale);
 		this.valueInputView.set({
-			placeholder: 'value'
+			placeholder: locale.t('Attribute value')
 		});
 
 		this.updateButtonView = new ButtonView(locale);
@@ -348,7 +348,7 @@ export default class EditPopup extends View {
 			type: 'button',
 			model: new Model({
 				name: '',
-				label: '- create new -',
+				label: this.locale.t('- create new -'),
 				withText: true
 			})
 		});

@@ -9,6 +9,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" type="image/png" href="https://c.cksource.com/a/1/logos/ckeditor5.png">
+	<link rel="stylesheet" href="../build/ckeditor.css">
 	<link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body data-editor="DecoupledDocumentEditor" data-collaboration="false">
@@ -104,9 +105,10 @@
 			– Frederico Knabben. All rights reserved.
 		</p>
 	</footer>
-	<script src="../build/ckeditor.js"></script>
-	<script>DecoupleExtendedEditor
-			.create( document.querySelector( '.editor' ), {
+	<script type="module">
+		import Editor from '../build/ckeditor.js';
+		Editor.create( {
+				root: { element: document.querySelector( '.editor' ) },
 				
 				toolbar: {
 					items: [
@@ -155,8 +157,7 @@
 						'tableCellProperties',
 						'tableProperties'
 					]
-				},
-				licenseKey: '',
+				}
 				
 			} )
 			.then( editor => {
@@ -167,9 +168,6 @@
 				document.querySelector( '.ck-toolbar' ).classList.add( 'ck-reset_all' );
 			} )
 			.catch( error => {
-				console.error( 'Oops, something gone wrong!' );
-				console.error( 'Please, report the following error in the https://github.com/ckeditor/ckeditor5 with the build id and the error stack trace:' );
-				console.warn( 'Build id: 4yaeu8p9k87d-i9tx57pekm1t' );
 				console.error( error );
 			} );
 	</script>

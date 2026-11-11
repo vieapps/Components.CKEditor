@@ -1,7 +1,7 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import removeIcon from '@ckeditor/ckeditor5-remove-format/theme/icons/remove-format.svg';
-import removeCss from '../assets/remove.tags.css';
+import { Plugin } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { IconRemoveFormat as removeIcon } from 'ckeditor5';
+import '../cke/remove.tags.css';
 
 /** Remove all tags (except P tags) */
 export default class RemoveTags extends Plugin {
@@ -17,7 +17,7 @@ export default class RemoveTags extends Plugin {
 			// create button
 			const button = new ButtonView(locale);
 			button.set({
-				label: (config || {}).label || 'Remove all tags (except P tags)',
+				label: (config || {}).label || locale.t('Remove all tags (except P tags)'),
 				icon: removeIcon,
 				tooltip: true,
 				class: 'ck-remove-tags'

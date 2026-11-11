@@ -1,17 +1,17 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Widget from '@ckeditor/ckeditor5-widget/src/widget';
-import Command from '@ckeditor/ckeditor5-core/src/command';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
-import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
-import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
-import { toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
+import { Plugin } from 'ckeditor5';
+import { Widget } from 'ckeditor5';
+import { Command } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { ClickObserver } from 'ckeditor5';
+import { ContextualBalloon } from 'ckeditor5';
+import { clickOutsideHandler } from 'ckeditor5';
+import { toWidgetEditable } from 'ckeditor5';
 
-import ViewPopup from './popup.view';
-import EditPopup from './popup.edit';
-import tagsCss from '../assets/custom.tags.css';
-import tagsIcon from '../assets/icons/tag.svg';
-import boxIcon from '../assets/icons/box.svg';
+import ViewPopup from './popup.view.js';
+import EditPopup from './popup.edit.js';
+import '../cke/custom.tags.css';
+import tagsIcon from '../cke/icons/tag.svg?raw';
+import boxIcon from '../cke/icons/box.svg?raw';
 
 export default class CustomTags extends Plugin {
 
@@ -269,68 +269,23 @@ class CustomTagsUI extends Plugin {
 	}
 
 	_getAttributes(element, getAll) {
-		const tagAttributes = new Map();
-		if (!element) {
-			return tagAttributes;
-		}
-		const classes = Array.from((element._classes || new Set()).values());
-		if (classes.length > 0) {
-			tagAttributes.set('class', classes.join(' '));
-		}
-		const styles = (element._styles || {})._styles || {};
-		let style = '';
-		Object.keys(styles).forEach(name => {
-			const value = styles[name];
-			style += value && typeof value == 'string' ? `${name}:${value};` : '';
-		});
-		const background = styles.background;
-		if (background) {
-			Object.keys(background).forEach(name => style += `background-${name}:${background[name]};`);
-		}
-		const margin = styles.margin;
-		if (margin) {
-			Object.keys(margin).forEach(name => style += `margin-${name}:${margin[name]};`);
-		}
-		const padding = styles.padding;
-		if (padding) {
-			Object.keys(padding).forEach(name => style += `padding-${name}:${padding[name]};`);
-		}
-		const border = styles.border;
-		if (border && border.color && border.style && border.width) {
-			Object.keys(border.width).forEach(name => style += `border-${name}:${border.width[name]} ${border.style[name]} ${border.color[name]};`);
-		}
-		if (style !== '') {
-			tagAttributes.set('style', style);
-		}
-		const attributes = element._attrs || new Map();
-		attributes.forEach((value, name) => {
-			if (getAll) {
-				tagAttributes.set(name, value);
-			}
-			else if (!styles[name] && !name.startsWith('background') && !name.startsWith('block') && name != 'alignment' && name != 'padding') {
-				tagAttributes.set(name, value);
-			}
-		});
-		tagAttributes.delete('contenteditable');
-		return tagAttributes;
+		const attributes = new Map(element ? element.getAttributes() : []);
+		attributes.delete('contenteditable');
+		return attributes;
 	}
 
 	_getSelectedElement() {
-		const selection = this.editor.editing.view.document.selection;
-		let element = selection.getSelectedElement() || (selection.getFirstPosition() || {}).parent;
-		while (!!element) {
-			if (element.name && this.knownTags.has(element.name)) {
-				break;
+		const selection = this.editor.model.document.selection;
+		let element = selection.getSelectedElement() || selection.getFirstPosition()?.parent;
+		while (element) {
+			if (this.knownTags.has(element.name)) {
+				const view = this.editor.editing.mapper.toViewElement(element);
+				return view?.getCustomProperty('isCustomTag') ? view : undefined;
 			}
-			else {
-				element = element.name && this.bypassTags.has(element.name)
-					? undefined
-					: element.parent;
-			}
+			if (this.bypassTags.has(element.name)) return undefined;
+			element = element.parent;
 		}
-		return element && element.is('containerElement') && element.name && this.knownTags.has(element.name) && !!element.getCustomProperty('isCustomTag')
-			? element
-			: undefined;
+		return undefined;
 	}
 
 	_showUI(element) {

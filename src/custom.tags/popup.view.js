@@ -1,12 +1,12 @@
-﻿import View from '@ckeditor/ckeditor5-ui/src/view';
-import LabelView from '@ckeditor/ckeditor5-ui/src/label/labelview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
+import { View } from 'ckeditor5';
+import { LabelView } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { KeystrokeHandler } from 'ckeditor5';
 
-import updateIcon from '../assets/icons/tools.svg';
-import paragraphIcon from '../assets/icons/paragraph.svg';
-import selectIcon from '@ckeditor/ckeditor5-select-all/theme/icons/select-all.svg';
-import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
+import updateIcon from '../cke/icons/tools.svg?raw';
+import paragraphIcon from '../cke/icons/paragraph.svg?raw';
+import { IconSelectAll as selectIcon } from 'ckeditor5';
+import { IconCancel as cancelIcon } from 'ckeditor5';
 
 export default class ViewPopup extends View {
 

@@ -1,0 +1,46 @@
+[
+  {
+    "input": "<p>Xin chào <strong>Việt Nam</strong> <em>English</em>.</p>",
+    "legacy": "<p>Xin chào <strong>Việt Nam</strong> <i>English</i>.</p>"
+  },
+  {
+    "input": "<div class=\"special block\" data-id=\"fixture\"><h2>Tiêu đề</h2><p>Nội dung <label class=\"special text\" data-key=\"x\">nhãn</label></p></div>",
+    "legacy": "<div class=\"special block\" data-id=\"fixture\"><h2>Tiêu đề</h2><p>Nội dung&nbsp;<label class=\"special text\" data-key=\"x\">nhãn</label></p></div>"
+  },
+  {
+    "input": "<section class=\"special block\" style=\"width:300px;float:right;\"><p>Đoạn thứ nhất</p><div data-nested=\"true\"><p>Lồng nhau</p></div></section>",
+    "legacy": "<section class=\"special block\" style=\"float:right;text-align:right;width:300px;\" width=\"300px\" alignment=\"right\"><p>Đoạn thứ nhất</p><div data-nested=\"true\"><p>Lồng nhau</p></div></section>"
+  },
+  {
+    "input": "<p>Trước<a name=\"mục-1\" class=\"bookmark\"></a>Sau <a href=\"#mục-1\">Đi tới</a></p>",
+    "legacy": "<p>Trước<a class=\"bookmark\" name=\"mục-1\"></a>Sau <a href=\"#mục-1\">Đi tới</a></p>"
+  },
+  {
+    "input": "<p><a href=\"https://example.test/file.jpg?x-temp-token=fixture\" class=\"inline popup\" target=\"_blank\" rel=\"noopener noreferrer\">Ảnh</a></p>",
+    "legacy": "<p><a class=\"inline popup\" href=\"https://example.test/file.jpg?x-temp-token=fixture\" target=\"_blank\" rel=\"noopener noreferrer\">Ảnh</a></p>"
+  },
+  {
+    "input": "<figure class=\"image image-style-side\"><a href=\"https://example.test/full.png\" class=\"inline popup\"><img src=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\" alt=\"Ảnh\"></a><figcaption>Chú thích</figcaption></figure>",
+    "legacy": "<figure class=\"image image-style-side\"><a class=\"inline popup\" href=\"https://example.test/full.png\"><img src=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\" alt=\"Ảnh\"></a><figcaption>Chú thích</figcaption></figure>"
+  },
+  {
+    "input": "<figure class=\"table\"><table style=\"border:1px solid red;background-color:#ffeecc;\"><tbody><tr><td style=\"padding:4px;background-color:#ccffcc;\">Ô 1</td><td>Ô 2</td></tr></tbody></table></figure>",
+    "legacy": "<figure class=\"table\"><table style=\"background-color:#ffeecc;border-bottom:1px solid red;border-left:1px solid red;border-right:1px solid red;border-top:1px solid red;\"><tbody><tr><td style=\"background-color:#ccffcc;padding:4px;\">Ô 1</td><td>Ô 2</td></tr></tbody></table></figure>"
+  },
+  {
+    "input": "<ol><li>Một<ul><li>Con</li></ul></li><li>Hai</li></ol>",
+    "legacy": "<ol><li>Một<ul><li>Con</li></ul></li><li>Hai</li></ol>"
+  },
+  {
+    "input": "<p><span style=\"color:rgb(12, 34, 56);background-color:#ffeedd;font-size:18px;font-family:Arial;\">Màu</span></p>",
+    "legacy": "<p><span style=\"background-color:#ffeedd;color:rgb(12,34,56);\">Màu</span></p>"
+  },
+  {
+    "input": "<div class=\"page-break\" style=\"page-break-after:always;\"><span style=\"display:none;\">&nbsp;</span></div><p>Sau ngắt</p>",
+    "legacy": "<div class=\"page-break\" style=\"page-break-after:always;\"><span style=\"display:none;\">&nbsp;</span></div><p>Sau ngắt</p>"
+  },
+  {
+    "input": "<figure class=\"media\"><oembed url=\"https://www.youtube.com/watch?v=fixture\"></oembed></figure>",
+    "legacy": "<figure class=\"media\"><oembed url=\"https://www.youtube.com/watch?v=fixture\"></oembed></figure>"
+  }
+]

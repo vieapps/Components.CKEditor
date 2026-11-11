@@ -1,14 +1,14 @@
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import InputTextView from '@ckeditor/ckeditor5-ui/src/inputtext/inputtextview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
-import submitHandler from '@ckeditor/ckeditor5-ui/src/bindings/submithandler';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import FocusCycler from '@ckeditor/ckeditor5-ui/src/focuscycler';
-import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection';
+import { View } from 'ckeditor5';
+import { InputTextView } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { KeystrokeHandler } from 'ckeditor5';
+import { submitHandler } from 'ckeditor5';
+import { FocusTracker } from 'ckeditor5';
+import { FocusCycler } from 'ckeditor5';
+import { ViewCollection } from 'ckeditor5';
 
-import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
-import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
+import { IconCheck as checkIcon } from 'ckeditor5';
+import { IconCancel as cancelIcon } from 'ckeditor5';
 
 export default class EditPopup extends View {
 
@@ -30,7 +30,7 @@ export default class EditPopup extends View {
 		});
 
 		this.nameInputView = new InputTextView(locale);
-		this.nameInputView.placeholder = 'bookmark name';
+		this.nameInputView.placeholder = locale.t('Bookmark name');
 
 		this.saveButtonView = this._createButton(locale.t('Save'), checkIcon, 'ck-button-save');
 		this.saveButtonView.type = 'submit';

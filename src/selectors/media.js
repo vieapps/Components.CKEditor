@@ -1,57 +1,47 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import mediaIcon from '../assets/icons/media.svg';
+import { Plugin, ButtonView, ModelLiveRange } from 'ckeditor5';
+import mediaIcon from '../cke/icons/media.svg?raw';
 
-/** Allow to select a uploaded media file */
 export default class MediaSelector extends Plugin {
-
-	static get pluginName() {
-		return 'MediaSelector';
-	}
-
+	static get pluginName() { return 'MediaSelector'; }
 	init() {
-		// setup `mediaSelector` button
-		const config = this.editor.config.get('media.selector');
+		this.pending = new Set();
 		this.editor.ui.componentFactory.add('mediaSelector', locale => {
-			// create button
+			const editor = this.editor;
+			const config = editor.config.get('media.selector');
 			const button = new ButtonView(locale);
-			button.set({
-				label: (config || {}).label || 'Insert an uploaded media',
-				icon: mediaIcon,
-				tooltip: true
+			button.set({ label: config?.label || locale.t('Insert an uploaded media'), icon: mediaIcon, tooltip: true });
+			button.bind('isEnabled').to(editor.commands.get('mediaEmbed'), 'isEnabled');
+			this.listenTo(button, 'execute', () => {
+				if (typeof config?.selectMedia !== 'function') return;
+				const range = ModelLiveRange.fromRange(editor.model.document.selection.getFirstRange());
+				this.pending.add(range);
+				let completed = false;
+				const selected = (link, type, href) => {
+					if (completed) return;
+					completed = true;
+					try {
+						if (editor.state === 'destroyed' || editor.state === 'destroying') return;
+						if (link) editor.model.change(writer => {
+							writer.setSelection(range.toRange());
+							if (type == null || type === 'image') {
+								const image = writer.createElement('imageBlock', { src: link, linkHref: href || link, linkAddInlinePopupCssClass: true });
+								editor.model.insertContent(image);
+							}
+							else editor.execute('mediaEmbed', link);
+						});
+						editor.editing.view.focus();
+					}
+					finally { range.detach(); this.pending.delete(range); }
+				};
+				try { Promise.resolve(config.selectMedia(selected)).catch(error => { selected(); console.error('Media selector failed', error); }); }
+				catch (error) { selected(); console.error('Media selector failed', error); }
 			});
-
-			// probably this button should be also disabled when the link command is disabled, so try setting editor.isReadOnly = true to see it in action
-			const command = this.editor.commands.get('mediaEmbed');
-			button.bind('isEnabled').to(command);
-
-			// call the outside handler to select a media (image, video or audio)
-			button.on('execute', () => {
-				if (config === undefined || config === null || typeof config.selectMedia !== 'function') {
-					console.warn('The configuration of the media selector button is undefined or invalid (no "selectMedia" function)', config);
-				}
-				else {
-					config.selectMedia((link, type, href) => {
-						if (link && link !== '') {
-							this.editor.model.change(writer => {
-								if (type === undefined || type === null || type === 'image') {
-									this.editor.model.insertContent(writer.createElement('image', { src: link, linkHref: href || link, linkAddInlinePopupCssClass: true }));
-								}
-								else {
-									try {
-										command.execute(link);
-									}
-									catch (error) {
-										console.error('Error occurred while inserting an embed media', error);
-									}
-								}
-							});
-						}
-					});
-				}
-			});
-
 			return button;
 		});
+	}
+	destroy() {
+		for (const range of this.pending) range.detach();
+		this.pending.clear();
+		super.destroy();
 	}
 }

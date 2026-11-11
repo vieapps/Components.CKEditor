@@ -1,105 +1,44 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import InputTextView from '@ckeditor/ckeditor5-ui/src/inputtext/inputtextview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
-import { normalizeColorOptions, getLocalizedColorOptions } from '@ckeditor/ckeditor5-ui/src/colorgrid/utils';
-import { addColorTableToDropdown } from '@ckeditor/ckeditor5-font/src/utils';
+import { Plugin, InputTextView, ButtonView, FormRowView, ColorSelectorView, createDropdown, normalizeColorOptions, getLocalizedColorOptions } from 'ckeditor5';
 
+/** Keep the existing arbitrary CSS color input alongside palette/document colors. */
 export default class ColorUI extends Plugin {
-
-	constructor(editor, { commandName, icon, componentName, dropdownLabel }) {
-		super(editor);
-		this.commandName = commandName;
-		this.componentName = componentName;
-		this.icon = icon;
-		this.dropdownLabel = dropdownLabel;
-		this.columns = editor.config.get(`${ this.componentName }.columns`);
-		this.colorTableView = undefined;
-	}
-
+	constructor(editor, options) { super(editor); Object.assign(this, options); }
 	init() {
 		const editor = this.editor;
-		const locale = editor.locale;
-		const t = locale.t;
 		const command = editor.commands.get(this.commandName);
-		const colorsConfig = normalizeColorOptions(editor.config.get(this.componentName).colors);
-		const localizedColors = getLocalizedColorOptions(locale, colorsConfig);
-		const documentColorsCount = editor.config.get(`${this.componentName}.documentColors`);
-
+		const config = editor.config.get(this.componentName);
+		const columns = config.columns || 5;
+		const colors = getLocalizedColorOptions(editor.locale, normalizeColorOptions(config.colors));
 		editor.ui.componentFactory.add(this.componentName, locale => {
-			const dropdownView = createDropdown(locale);
-
-			this.colorTableView = addColorTableToDropdown({
-				dropdownView,
-				colors: localizedColors.map(option => ({
-					label: option.label,
-					color: option.model,
-					options: {
-						hasBorder: option.hasBorder
-					}
-				})),
-				columns: this.columns,
-				removeButtonLabel: t('Remove color'),
-				documentColorsLabel: documentColorsCount !== 0 ? t('Document colors') : undefined,
-				documentColorsCount: documentColorsCount === undefined ? this.columns : documentColorsCount
+			const dropdown = createDropdown(locale);
+			const selector = new ColorSelectorView(locale, {
+				colors: colors.map(option => ({ label: option.label, color: option.model, options: { hasBorder: option.hasBorder } })),
+				columns, removeButtonLabel: locale.t('Remove color'), documentColorsLabel: locale.t('Document colors'),
+				documentColorsCount: config.documentColors ?? columns, colorPickerViewConfig: false
 			});
-			this.colorTableView.bind('selectedColor').to(command, 'value');
-
-			// -------------------------------------------
-			// custom color
-			this.colorTableView.customColor = null;
-			const colorInputView = new InputTextView(locale);
-			colorInputView.placeholder = 'code - ex: #aabbcc';
-			colorInputView.extendTemplate({
-				attributes: {
-					class: 'ck-custom-color'
+			selector.bind('selectedColor').to(command, 'value');
+			const input = new InputTextView(locale);
+			input.placeholder = locale.t('Color code, e.g. #aabbcc');
+			input.extendTemplate({ attributes: { class: 'ck-custom-color', 'aria-label': locale.t('Color code') } });
+			const apply = new ButtonView(locale);
+			apply.set({ label: locale.t('Use'), withText: true, tooltip: true });
+			const row = new FormRowView(locale, { children: [input, apply] });
+			dropdown.panelView.children.add(selector);
+			dropdown.panelView.children.add(row);
+			dropdown.buttonView.set({ label: this.dropdownLabel, icon: this.icon, tooltip: true });
+			dropdown.bind('isEnabled').to(command, 'isEnabled');
+			const execute = value => { editor.execute(this.commandName, { value }); editor.editing.view.focus(); dropdown.isOpen = false; };
+			this.listenTo(selector, 'execute', (event, data) => execute(data.value));
+			this.listenTo(apply, 'execute', () => execute(input.element.value));
+			let rendered = false;
+			this.listenTo(dropdown, 'change:isOpen', (event, name, open) => {
+				if (!rendered) { selector.appendUI(); rendered = true; }
+				if (open) {
+					if (config.documentColors !== 0) selector.updateDocumentColors(editor.model, this.componentName);
+					selector.updateSelectedColors();
 				}
 			});
-			colorInputView.bind('value').to(this.colorTableView, 'customColor');
-			colorInputView.on('input', () => this.colorTableView.customColor = colorInputView.element.value);
-			this.colorTableView.items.add(colorInputView);
-	
-			const colorButtonView = new ButtonView(locale);
-			colorButtonView.set({
-				withText: true,
-				tooltip: true,
-				label: 'Use'
-			});
-			colorButtonView.class = 'ck-custom-color';
-			colorButtonView.on('execute', () => this.colorTableView.fire('execute', { value: this.colorTableView.customColor }));
-			this.colorTableView.items.add(colorButtonView);
-			// -------------------------------------------
-
-			dropdownView.buttonView.set({
-				label: this.dropdownLabel,
-				icon: this.icon,
-				tooltip: true
-			});
-
-			dropdownView.extendTemplate({
-				attributes: {
-					class: 'ck-color-ui-dropdown'
-				}
-			});
-
-			dropdownView.bind('isEnabled').to(command);
-
-			dropdownView.on('execute', (evt, data) => {
-				editor.execute(this.commandName, data);
-				editor.editing.view.focus();
-			});
-
-			dropdownView.on('change:isOpen', (evt, name, isVisible) => {
-				dropdownView.colorTableView.appendGrids();
-				if (isVisible) {
-					if (documentColorsCount !== 0) {
-						this.colorTableView.updateDocumentColors(editor.model, this.componentName);
-					}
-					this.colorTableView.updateSelectedColors();
-				}
-			});
-
-			return dropdownView;
+			return dropdown;
 		});
 	}
 }

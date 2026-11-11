@@ -1,59 +1,94 @@
-import DecoupledDocumentEditor from '@ckeditor/ckeditor5-editor-decoupled/src/decouplededitor';
-import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
-import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
-import Autosave from '@ckeditor/ckeditor5-autosave/src/autosave';
-import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Code from '@ckeditor/ckeditor5-basic-styles/src/code';
-import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-// import FontBackgroundColor from '@ckeditor/ckeditor5-font/src/fontbackgroundcolor';
-// import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
-import FontFamily from '@ckeditor/ckeditor5-font/src/fontfamily';
-import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
-import Heading from '@ckeditor/ckeditor5-heading/src/heading';
-import Highlight from '@ckeditor/ckeditor5-highlight/src/highlight';
-import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
-import Image from '@ckeditor/ckeditor5-image/src/image';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
-import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize';
-import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
-import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar';
-import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
-import ImageInsert from '@ckeditor/ckeditor5-image/src/imageinsert';
-import Indent from '@ckeditor/ckeditor5-indent/src/indent';
-import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import Link from '@ckeditor/ckeditor5-link/src/link';
-import AutoLink from '@ckeditor/ckeditor5-link/src/autolink';
-import LinkImage from '@ckeditor/ckeditor5-link/src/linkimage';
-import List from '@ckeditor/ckeditor5-list/src/list';
-import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
-import MediaEmbedToolbar from '@ckeditor/ckeditor5-media-embed/src/mediaembedtoolbar';
-import PageBreak from '@ckeditor/ckeditor5-page-break/src/pagebreak';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefromoffice';
-import RemoveFormat from '@ckeditor/ckeditor5-remove-format/src/removeformat';
-import SimpleUploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/simpleuploadadapter';
-import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
-import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
-import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
-import Table from '@ckeditor/ckeditor5-table/src/table';
-import TableCellProperties from '@ckeditor/ckeditor5-table/src/tablecellproperties';
-import TableProperties from '@ckeditor/ckeditor5-table/src/tableproperties';
-import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
-import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
-import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
+import { DecoupledEditor as DecoupledDocumentEditor } from 'ckeditor5';
+import { Alignment } from 'ckeditor5';
+import { Autoformat } from 'ckeditor5';
+import { Autosave } from 'ckeditor5';
+import { BlockQuote } from 'ckeditor5';
+import { Bold } from 'ckeditor5';
+import { Code } from 'ckeditor5';
+import { CodeBlock } from 'ckeditor5';
+import { Essentials } from 'ckeditor5';
+// import { FontBackgroundColor } from 'ckeditor5';
+// import { FontColor } from 'ckeditor5';
+import { FontFamily } from 'ckeditor5';
+import { FontSize } from 'ckeditor5';
+import { Heading } from 'ckeditor5';
+import { Highlight } from 'ckeditor5';
+import { HorizontalLine } from 'ckeditor5';
+import { Image } from 'ckeditor5';
+import { ImageCaption } from 'ckeditor5';
+import { ImageResize } from 'ckeditor5';
+import { ImageStyle } from 'ckeditor5';
+import { ImageToolbar } from 'ckeditor5';
+import { ImageUpload } from 'ckeditor5';
+import { ImageInsert } from 'ckeditor5';
+import { Indent } from 'ckeditor5';
+import { IndentBlock } from 'ckeditor5';
+import { Italic } from 'ckeditor5';
+import { Link } from 'ckeditor5';
+import { AutoLink } from 'ckeditor5';
+import { LinkImage } from 'ckeditor5';
+import { List } from 'ckeditor5';
+import { MediaEmbed } from 'ckeditor5';
+import { MediaEmbedToolbar } from 'ckeditor5';
+import { PageBreak } from 'ckeditor5';
+import { Paragraph } from 'ckeditor5';
+import { PasteFromOffice } from 'ckeditor5';
+import { RemoveFormat } from 'ckeditor5';
+import { SimpleUploadAdapter } from 'ckeditor5';
+import { Strikethrough } from 'ckeditor5';
+import { Subscript } from 'ckeditor5';
+import { Superscript } from 'ckeditor5';
+import { Table } from 'ckeditor5';
+import { TableCellProperties } from 'ckeditor5';
+import { TableProperties } from 'ckeditor5';
+import { TableToolbar } from 'ckeditor5';
+import { TextTransformation } from 'ckeditor5';
+import { Underline } from 'ckeditor5';
 
-import RemoveTags from './remove.tags/remove.tags';
-import CustomTags from './custom.tags/custom.tags';
-import Bookmark from './bookmark/bookmark';
-import FontBackgroundColor from './colors/color.background';
-import FontColor from './colors/color.foreground';
-import LinkSelector from './selectors/link';
-import MediaSelector from './selectors/media';
+import RemoveTags from './remove.tags/remove.tags.js';
+import CustomTags from './custom.tags/custom.tags.js';
+import Bookmark from './bookmark/bookmark.js';
+import FontBackgroundColor from './colors/color.background.js';
+import FontColor from './colors/color.foreground.js';
+import LinkSelector from './selectors/link.js';
+import MediaSelector from './selectors/media.js';
 
-export default class Editor extends DecoupledDocumentEditor {}
+import { IconObjectFullWidth } from 'ckeditor5';
+import viTranslations from 'ckeditor5/translations/vi.js';
+import customTranslations from './translations/vi.js';
+import enTranslations from './translations/en.js';
+import 'ckeditor5/ckeditor5.css';
+
+function mergeConfig(base, extra) {
+	const result = { ...base };
+	for (const [key, value] of Object.entries(extra || {})) {
+		result[key] = value && Object.getPrototypeOf(value) === Object.prototype && base?.[key] && Object.getPrototypeOf(base[key]) === Object.prototype
+			? mergeConfig(base[key], value) : value;
+	}
+	return result;
+}
+
+export default class Editor {
+	static async create(config) {
+		const options = mergeConfig(Editor.defaultConfig, config);
+		options.plugins = Editor.builtinPlugins;
+		options.licenseKey = 'GPL';
+		// Preserve the app's optional-plugin flags without leaving unavailable toolbar entries.
+		const toolbarItemsByPlugin = { PageBreak: ['pageBreak'], Highlight: ['highlight'], Code: ['code'], CodeBlock: ['codeBlock'], ImageInsert: ['imageInsert', 'insertImage'], MediaSelector: ['mediaSelector'] };
+		const hiddenItems = new Set((options.removePlugins || []).flatMap(name => toolbarItemsByPlugin[name] || []));
+		const normalizeItems = items => items.map(item => ({ fontfamily: 'fontFamily', fontsize: 'fontSize' })[item] || item).filter(item => !hiddenItems.has(item));
+		if (Array.isArray(options.toolbar)) options.toolbar = normalizeItems(options.toolbar);
+		else if (options.toolbar?.items) options.toolbar = { ...options.toolbar, items: normalizeItems(options.toolbar.items) };
+
+		options.translations = [enTranslations, viTranslations, customTranslations, ...(config.translations || [])];
+		options.language = typeof options.language === 'string' ? (options.language.startsWith('vi') ? 'vi' : 'en') : options.language;
+		const instance = await DecoupledDocumentEditor.create(options);
+		// Keep legacy CMS HTML free of engine-generated list IDs. Explicit caller options still win.
+		const getData = instance.getData.bind(instance);
+		instance.getData = (dataOptions = {}) => getData({ skipListItemIds: true, ...dataOptions });
+		return instance;
+	}
+}
 
 // plugins (be included in the build)
 Editor.builtinPlugins = [
@@ -126,8 +161,8 @@ Editor.defaultConfig = {
 			'subscript',
 			'superscript',
 			'alignment',
-			'fontfamily',
-			'fontsize',
+			'fontFamily',
+			'fontSize',
 			'fontColor',
 			'fontBackgroundColor',
 			'|',
@@ -161,12 +196,8 @@ Editor.defaultConfig = {
 		]
 	},
 	image: {
-		styles: [
-			'full',
-			'side',
-			'alignLeft',
-			'alignRight'
-		],
+		styles: { options: [{ name: 'full', title: 'Full size image', icon: IconObjectFullWidth, modelElements: ['imageBlock'], isDefault: true }, 'side', 'alignLeft', 'alignRight'] },
+		insert: { type: 'block' },
 		resizeOptions: [
 			{
 				name: 'imageResize:original',
@@ -207,6 +238,7 @@ Editor.defaultConfig = {
 			'imageResize'
 		]
 	},
+	mediaEmbed: { toolbar: ['mediaEmbed'] },
 	table: {
 		contentToolbar: [
 			'tableColumn',
@@ -238,9 +270,7 @@ Editor.defaultConfig = {
 				mode: 'manual',
 				label: 'inline popup',
 				defaultValue: false,
-				attributes: {
-					class: 'inline popup'
-				}
+				classes: ['inline', 'popup']
 			}
 		}
 	},

@@ -2,18 +2,18 @@
 // Author: RasmusRummel
 // Repo: https://github.com/RasmusRummel/ckeditor5-bookmark
 
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Command from '@ckeditor/ckeditor5-core/src/command';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import ClickObserver from '@ckeditor/ckeditor5-engine/src/view/observer/clickobserver';
-import ContextualBalloon from '@ckeditor/ckeditor5-ui/src/panel/balloon/contextualballoon';
-import clickOutsideHandler from '@ckeditor/ckeditor5-ui/src/bindings/clickoutsidehandler';
-import { toWidget } from '@ckeditor/ckeditor5-widget/src/utils';
+import { Plugin } from 'ckeditor5';
+import { Command } from 'ckeditor5';
+import { ButtonView } from 'ckeditor5';
+import { ClickObserver } from 'ckeditor5';
+import { ContextualBalloon } from 'ckeditor5';
+import { clickOutsideHandler } from 'ckeditor5';
+import { toWidget } from 'ckeditor5';
 
-import ViewPopup from './popup.view';
-import EditPopup from './popup.edit';
-import bookmarkCss from '../assets/bookmark.css';
-import bookmarkIcon from '../assets/icons/bookmark.svg';
+import ViewPopup from './popup.view.js';
+import EditPopup from './popup.edit.js';
+import '../cke/bookmark.css';
+import bookmarkIcon from '../cke/icons/bookmark.svg?raw';
 
 /** Allow to update a bookmark */
 export default class Bookmark extends Plugin {
@@ -130,7 +130,7 @@ class BookmarkUI extends Plugin {
 			const command = editor.commands.get('bookmark');
 			const button = new ButtonView(locale);
 			button.set({
-				label: 'Bookmark',
+				label: locale.t('Bookmark'),
 				tooltip: true,
 				icon: bookmarkIcon
 			});

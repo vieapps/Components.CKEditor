@@ -1,8 +1,8 @@
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import FontColorEditing from '@ckeditor/ckeditor5-font/src/fontcolor/fontcolorediting';
-import { FONT_COLOR } from '@ckeditor/ckeditor5-font/src/utils';
-import fontColorIcon from '@ckeditor/ckeditor5-font/theme/icons/font-color.svg';
-import ColorUI from './color.ui';
+import { Plugin } from 'ckeditor5';
+import { FontColorEditing } from 'ckeditor5';
+const FONT_COLOR = 'fontColor';
+import { IconFontColor as fontColorIcon } from 'ckeditor5';
+import ColorUI from './color.ui.js';
 
 export default class FontColor extends Plugin {
 	static get requires() {
