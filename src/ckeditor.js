@@ -232,6 +232,7 @@ Editor.defaultConfig = {
 			'imageStyle:side',
 			'|',
 			'imageTextAlternative',
+			'toggleImageCaption',
 			'|',
 			'linkImage',
 			'|',
